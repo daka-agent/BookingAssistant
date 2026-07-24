@@ -1,0 +1,2133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0e1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<title>北京亲子游安心预约助手</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  :root{
+    --bg:#0a0e1a; --bg2:#111827; --card:#151b2e; --border:#1e293b;
+    --cyan:#00f0ff; --blue:#3b82f6; --purple:#8b5cf6; --orange:#ff8c42;
+    --red:#ff3b5c; --green:#22d3ee; --yellow:#fbbf24;
+    --text:#e2e8f0; --text2:#94a3b8; --text3:#64748b;
+  }
+  html{font-size:16px; -webkit-text-size-adjust:100%;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+    line-height:1.6; min-height:100vh; overflow-x:hidden;
+    padding-bottom:2rem;
+    -webkit-font-smoothing:antialiased;
+    touch-action:manipulation;
+  }
+  body::before{
+    content:''; position:fixed; top:0; left:0; right:0; bottom:0;
+    background-image:
+      linear-gradient(rgba(0,240,255,0.03) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(0,240,255,0.03) 1px,transparent 1px);
+    background-size:40px 40px; pointer-events:none; z-index:0;
+  }
+  body::after{
+    content:''; position:fixed; top:-50%; left:-50%; width:200%; height:200%;
+    background:radial-gradient(circle at 30% 20%,rgba(59,130,246,0.08),transparent 50%),
+               radial-gradient(circle at 70% 80%,rgba(139,92,246,0.06),transparent 50%);
+    pointer-events:none; z-index:0;
+  }
+  .container{max-width:680px; margin:0 auto; padding:1rem; padding-top:max(1rem, env(safe-area-inset-top)); padding-bottom:max(2rem, env(safe-area-inset-bottom)); padding-left:max(1rem, env(safe-area-inset-left)); padding-right:max(1rem, env(safe-area-inset-right)); position:relative; z-index:1;}
+
+  /* ============ 通用头部 ============ */
+  .header{text-align:center; padding:1.5rem 0 1rem;}
+  .header h1{
+    font-size:1.5rem; font-weight:800; letter-spacing:2px;
+    background:linear-gradient(135deg,var(--cyan),var(--blue),var(--purple));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    background-clip:text;
+  }
+  .header .sub{font-size:.8rem; color:var(--text2); margin-top:.3rem;}
+
+  /* ============ 向导页 ============ */
+  #view-wizard{display:block;}
+  #view-plan{display:none;}
+
+  .wizard-steps{
+    display:flex; gap:.5rem; justify-content:center;
+    margin:1rem 0 1.5rem;
+  }
+  .ws-item{
+    display:flex; align-items:center; gap:.4rem;
+    font-size:.75rem; color:var(--text3);
+  }
+  .ws-num{
+    width:24px; height:24px; border-radius:50%;
+    border:2px solid var(--border); display:flex;
+    align-items:center; justify-content:center;
+    font-size:.75rem; font-weight:700; transition:all .3s;
+  }
+  .ws-item.active .ws-num{border-color:var(--cyan); color:var(--cyan); background:rgba(0,240,255,0.1);}
+  .ws-item.done .ws-num{border-color:var(--green); color:var(--bg); background:var(--green);}
+  .ws-line{width:30px; height:2px; background:var(--border); margin:0 .2rem;}
+  .ws-line.active{background:var(--cyan);}
+
+  .wizard-card{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:16px; padding:1.2rem; margin-bottom:1rem;
+  }
+  .wc-title{
+    font-size:.95rem; font-weight:700; margin-bottom:1rem;
+    display:flex; align-items:center; gap:.5rem;
+  }
+  .wc-title .icon{font-size:1.2rem;}
+
+  /* 表单元素 */
+  .form-group{margin-bottom:1rem;}
+  .form-label{font-size:.8rem; color:var(--text2); margin-bottom:.4rem; display:block;}
+  .form-input,.form-select{
+    width:100%; padding:.7rem .8rem; border-radius:10px;
+    border:1px solid var(--border); background:var(--bg2);
+    color:var(--text); font-size:.9rem; outline:none;
+    transition:border-color .2s;
+  }
+  .form-input:focus,.form-select:focus{border-color:var(--cyan);}
+  .form-row{display:flex; gap:.6rem;}
+  .form-row>*{flex:1;}
+
+  .stepper{
+    display:flex; align-items:center; gap:.6rem;
+  }
+  .stepper-btn{
+    width:36px; height:36px; border-radius:8px;
+    border:1px solid var(--border); background:var(--bg2);
+    color:var(--text); font-size:1.1rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:all .2s;
+  }
+  .stepper-btn:active{background:var(--cyan); color:var(--bg);}
+  .stepper-val{font-size:1.1rem; font-weight:700; min-width:2rem; text-align:center;}
+
+  /* 景点选择卡片 */
+  .attraction-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:.6rem;
+  }
+  .att-card{
+    border:1px solid var(--border); border-radius:12px;
+    padding:.8rem; cursor:pointer; transition:all .2s;
+    background:var(--bg2); position:relative;
+  }
+  .att-card:active{transform:scale(.97);}
+  .att-card.selected{
+    border-color:var(--cyan);
+    background:linear-gradient(135deg,rgba(0,240,255,0.08),var(--bg2));
+  }
+  .att-card.selected::after{
+    content:'✓'; position:absolute; top:.4rem; right:.4rem;
+    width:20px; height:20px; border-radius:50%;
+    background:var(--cyan); color:var(--bg);
+    font-size:12px; font-weight:900;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .att-icon{font-size:1.5rem; margin-bottom:.3rem;}
+  .att-name{font-size:.85rem; font-weight:700;}
+  .att-meta{font-size:.65rem; color:var(--text3); margin-top:.2rem;}
+  .att-diff{
+    display:inline-block; font-size:.6rem; padding:.1rem .4rem;
+    border-radius:4px; margin-top:.3rem; font-weight:600;
+  }
+  .att-diff.hard{background:rgba(255,59,92,0.15); color:var(--red);}
+  .att-diff.medium{background:rgba(255,140,66,0.15); color:var(--orange);}
+  .att-diff.easy{background:rgba(34,211,238,0.15); color:var(--green);}
+
+  /* 按钮 */
+  .btn{
+    width:100%; padding:.9rem; border-radius:12px;
+    border:none; font-size:.95rem; font-weight:700;
+    cursor:pointer; transition:all .2s;
+  }
+  .btn-primary{
+    background:linear-gradient(135deg,var(--cyan),var(--blue));
+    color:var(--bg);
+  }
+  .btn-primary:active{transform:scale(.98); opacity:.9;}
+  .btn-primary:disabled{opacity:.4; cursor:not-allowed;}
+  .btn-secondary{
+    background:var(--bg2); color:var(--text2);
+    border:1px solid var(--border);
+  }
+  .btn-secondary:active{background:var(--card);}
+  .btn-row{display:flex; gap:.6rem; margin-top:1rem;}
+  .btn-row .btn{flex:1;}
+
+  /* 确认页汇总 */
+  .summary-box{
+    background:var(--bg2); border:1px solid var(--border);
+    border-radius:12px; padding:1rem; margin-bottom:.8rem;
+  }
+  .summary-row{
+    display:flex; justify-content:space-between;
+    padding:.4rem 0; font-size:.82rem;
+    border-bottom:1px solid rgba(255,255,255,0.04);
+  }
+  .summary-row:last-child{border-bottom:none;}
+  .summary-row .label{color:var(--text3);}
+  .summary-row .value{color:var(--text); font-weight:600;}
+  .summary-attractions{
+    display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.4rem;
+  }
+  .summary-tag{
+    font-size:.72rem; padding:.2rem .6rem; border-radius:20px;
+    border:1px solid var(--border); background:rgba(255,255,255,0.03);
+    color:var(--text2);
+  }
+
+  /* ============ 方案页（沿用+通用化） ============ */
+  .plan-header{
+    display:flex; align-items:center; gap:.6rem;
+    padding:.6rem 0;
+  }
+  .plan-back{
+    font-size:.78rem; color:var(--text2); cursor:pointer;
+    padding:.4rem .7rem; border-radius:8px;
+    border:1px solid var(--border); background:var(--card);
+    transition:all .2s; white-space:nowrap;
+  }
+  .plan-back:active{background:var(--bg2);}
+
+  .header .tags{display:flex; gap:.5rem; justify-content:center; margin-top:.6rem; flex-wrap:wrap;}
+  .tag{
+    font-size:.7rem; padding:.2rem .6rem; border-radius:20px;
+    border:1px solid var(--border); color:var(--text2);
+    background:rgba(255,255,255,0.03);
+  }
+  .tag.active{border-color:var(--cyan); color:var(--cyan); background:rgba(0,240,255,0.08);}
+  .tag.success{border-color:var(--green); color:var(--green); background:rgba(34,211,238,0.08);}
+
+  /* 票务状态看板 */
+  .status-board{
+    display:grid; grid-template-columns:1fr 1fr 1fr; gap:.6rem;
+    margin:1rem 0;
+  }
+  .sb-card{
+    border-radius:12px; padding:.8rem .5rem; text-align:center;
+    border:1px solid var(--border); background:var(--card);
+    transition:all .3s;
+  }
+  .sb-card.done{border-color:var(--green); background:linear-gradient(135deg,rgba(34,211,238,0.12),var(--card));}
+  .sb-card.pending{border-color:var(--orange); background:linear-gradient(135deg,rgba(255,140,66,0.08),var(--card));}
+  .sb-card.failed{border-color:var(--red); opacity:.6;}
+  .sb-card.missed{border-color:var(--text3); opacity:.5;}
+  .sb-empty{
+    grid-column:1/-1; text-align:center; padding:1.5rem 1rem;
+    border:1px dashed var(--border); border-radius:12px; background:var(--bg2);
+  }
+  .sb-empty-icon{font-size:1.8rem; margin-bottom:.4rem;}
+  .sb-empty-title{font-size:.85rem; color:var(--text1); font-weight:600;}
+  .sb-empty-desc{font-size:.7rem; color:var(--text3); margin-top:.3rem;}
+  .sb-icon{font-size:1.4rem; margin-bottom:.3rem;}
+  .sb-name{font-size:.75rem; font-weight:700;}
+  .sb-date{font-size:.65rem; color:var(--text3); margin-top:.15rem;}
+  .sb-status{font-size:.6rem; font-weight:700; margin-top:.3rem; padding:.1rem .4rem; border-radius:4px; display:inline-block;}
+  .sb-card.done .sb-status{background:rgba(34,211,238,0.15); color:var(--green);}
+  .sb-card.pending .sb-status{background:rgba(255,140,66,0.15); color:var(--orange);}
+  .sb-card.failed .sb-status{background:rgba(255,59,92,0.1); color:var(--red);}
+  .sb-card.missed .sb-status{background:rgba(100,116,139,0.1); color:var(--text3);}
+
+  /* 紧急横幅 */
+  .urgent-banner{
+    background:linear-gradient(135deg,rgba(255,59,92,0.15),rgba(255,140,66,0.1));
+    border:1px solid rgba(255,59,92,0.3); border-radius:12px;
+    padding:1rem; margin:1rem 0; display:flex; align-items:center; gap:.8rem;
+    animation:pulse-border 2s ease-in-out infinite;
+  }
+  @keyframes pulse-border{0%,100%{border-color:rgba(255,59,92,0.3);}50%{border-color:rgba(255,59,92,0.6);}}
+  .urgent-icon{font-size:1.8rem; animation:bounce 1s ease-in-out infinite;}
+  @keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+  .urgent-text{flex:1;}
+  .urgent-text .title{font-size:.95rem; font-weight:700; color:var(--red);}
+  .urgent-text .desc{font-size:.75rem; color:var(--text2); margin-top:.2rem;}
+
+  /* 倒计时 */
+  .countdown-box{
+    background:linear-gradient(135deg,var(--card),var(--bg2));
+    border:1px solid var(--border); border-radius:16px;
+    padding:1.5rem 1rem; text-align:center; margin:1rem 0;
+    position:relative; overflow:hidden;
+  }
+  .countdown-box::before{
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+    animation:scan 3s linear infinite;
+  }
+  @keyframes scan{0%{transform:translateX(-100%);}100%{transform:translateX(100%);}}
+  .countdown-label{font-size:.75rem; color:var(--text2); margin-bottom:.5rem; letter-spacing:1px;}
+  .countdown-target{font-size:.9rem; color:var(--cyan); font-weight:600; margin-bottom:.8rem;}
+  .countdown-timer{display:flex; gap:.5rem; justify-content:center; align-items:baseline; font-family:'Courier New',monospace;}
+  .cd-unit{text-align:center;}
+  .cd-num{font-size:2.2rem; font-weight:900; color:var(--cyan); text-shadow:0 0 20px rgba(0,240,255,0.3); min-width:2.5rem; display:inline-block;}
+  .cd-label{font-size:.6rem; color:var(--text3); text-transform:uppercase; margin-top:.2rem;}
+  .cd-sep{font-size:1.5rem; color:var(--text3); font-weight:300;}
+
+  /* 实战经验 */
+  .lessons{
+    background:linear-gradient(135deg,rgba(251,191,36,0.08),rgba(255,140,66,0.05));
+    border:1px solid rgba(251,191,36,0.2); border-radius:14px;
+    padding:1rem; margin:1rem 0;
+  }
+  .ls-title{font-size:.85rem; font-weight:700; color:var(--yellow); margin-bottom:.6rem; display:flex; align-items:center; gap:.4rem;}
+  .ls-item{font-size:.78rem; color:var(--text2); padding:.35rem 0; display:flex; gap:.5rem; align-items:flex-start;}
+  .ls-item .num{color:var(--yellow); font-weight:700; flex-shrink:0; min-width:1.2rem;}
+
+  /* 时间线 */
+  .section-title{
+    font-size:.85rem; font-weight:700; color:var(--text2);
+    letter-spacing:1px; margin:1.5rem 0 .8rem;
+    display:flex; align-items:center; gap:.5rem;
+  }
+  .section-title::before{content:''; width:3px; height:14px; background:var(--cyan); border-radius:2px;}
+
+  .timeline{display:flex; flex-direction:column; gap:.6rem;}
+  .tl-item{
+    background:var(--card); border:1px solid var(--border); border-radius:10px;
+    padding:.8rem 1rem; display:flex; align-items:center; gap:.8rem; transition:all .2s;
+  }
+  .tl-item.critical{border-left:3px solid var(--red); background:linear-gradient(90deg,rgba(255,59,92,0.08),var(--card));}
+  .tl-item.high{border-left:3px solid var(--orange);}
+  .tl-item.medium{border-left:3px solid var(--yellow);}
+  .tl-item.low{border-left:3px solid var(--green); opacity:.7;}
+  .tl-item.done{opacity:.4;}
+  .tl-item.missed{opacity:.35; border-left:3px solid var(--text3);}
+  .tl-time{font-family:'Courier New',monospace; font-size:.9rem; font-weight:700; min-width:3.5rem; text-align:center;}
+  .tl-time.critical{color:var(--red);}
+  .tl-time.high{color:var(--orange);}
+  .tl-time.medium{color:var(--yellow);}
+  .tl-time.low{color:var(--green);}
+  .tl-info{flex:1;}
+  .tl-info .museum{font-size:.85rem; font-weight:600;}
+  .tl-info .target{font-size:.7rem; color:var(--text3); margin-top:.1rem;}
+  .tl-badge{font-size:.6rem; padding:.15rem .5rem; border-radius:4px; font-weight:600;}
+  .tl-badge.critical{background:rgba(255,59,92,0.15); color:var(--red);}
+  .tl-badge.high{background:rgba(255,140,66,0.15); color:var(--orange);}
+  .tl-badge.medium{background:rgba(251,191,36,0.15); color:var(--yellow);}
+  .tl-badge.done{background:rgba(34,211,238,0.15); color:var(--green);}
+  .tl-badge.missed{background:rgba(100,116,139,0.15); color:var(--text3);}
+
+  /* 策略卡片 */
+  .strategy-card{background:var(--card); border:1px solid var(--border); border-radius:14px; margin-bottom:.8rem; overflow:hidden;}
+  .strategy-card.done{border-color:rgba(34,211,238,0.3);}
+  .sc-header{padding:1rem; display:flex; align-items:center; gap:.8rem; cursor:pointer; transition:background .2s;}
+  .sc-header:active{background:rgba(255,255,255,0.03);}
+  .sc-icon{font-size:1.5rem;}
+  .sc-title{flex:1;}
+  .sc-title .name{font-size:.95rem; font-weight:700;}
+  .sc-title .meta{font-size:.7rem; color:var(--text3); margin-top:.1rem;}
+  .sc-arrow{color:var(--text3); transition:transform .2s; font-size:.8rem;}
+  .sc-arrow.open{transform:rotate(180deg);}
+  .sc-body{max-height:0; overflow:hidden; transition:max-height .3s ease;}
+  .sc-body.open{max-height:1000px;}
+  .sc-content{padding:0 1rem 1rem;}
+  .sc-row{display:flex; gap:.5rem; padding:.5rem 0; border-bottom:1px solid rgba(255,255,255,0.04); font-size:.8rem;}
+  .sc-row:last-child{border-bottom:none;}
+  .sc-label{color:var(--text3); min-width:3.5rem; flex-shrink:0;}
+  .sc-value{color:var(--text); flex:1;}
+  .sc-value.highlight{color:var(--cyan); font-weight:600;}
+  .sc-value.warn{color:var(--orange); font-weight:600;}
+  .sc-tips{margin-top:.5rem; padding:.6rem; border-radius:8px; background:rgba(0,240,255,0.05); border:1px solid rgba(0,240,255,0.1);}
+  .sc-tips .tip-title{font-size:.75rem; color:var(--cyan); font-weight:600; margin-bottom:.3rem;}
+  .sc-tips ol{padding-left:1.2rem; font-size:.75rem; color:var(--text2); line-height:1.8;}
+  .sc-tips ol li{margin-bottom:.2rem;}
+  .sc-warning{
+    margin-top:.5rem; padding:.6rem; border-radius:8px;
+    background:rgba(255,59,92,0.06); border:1px solid rgba(255,59,92,0.15);
+    font-size:.73rem; color:var(--red);
+  }
+
+  /* 清单 */
+  .checklist{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1rem; margin-bottom:.8rem;}
+  .cl-title{font-size:.85rem; font-weight:700; margin-bottom:.6rem; display:flex; align-items:center; gap:.4rem;}
+  .cl-item{display:flex; align-items:flex-start; gap:.5rem; padding:.4rem 0; font-size:.78rem; color:var(--text2); cursor:pointer;}
+  .cl-checkbox{width:18px; height:18px; border:2px solid var(--border); border-radius:4px; flex-shrink:0; transition:all .2s; margin-top:1px; display:flex; align-items:center; justify-content:center;}
+  .cl-checkbox.checked{background:var(--cyan); border-color:var(--cyan);}
+  .cl-checkbox.checked::after{content:'✓'; color:var(--bg); font-size:11px; font-weight:900;}
+  .cl-item.checked{color:var(--text3); text-decoration:line-through;}
+
+  /* 儿童票指南 */
+  .child-guide{
+    background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(59,130,246,0.05));
+    border:1px solid rgba(139,92,246,0.2); border-radius:14px;
+    padding:1rem; margin-bottom:.8rem;
+  }
+  .cg-title{font-size:.85rem; font-weight:700; color:var(--purple); margin-bottom:.6rem;}
+  .cg-item{font-size:.78rem; color:var(--text2); padding:.3rem 0; display:flex; gap:.5rem;}
+  .cg-item .museum{min-width:3rem; font-weight:600; color:var(--text);}
+  .cg-note{font-size:.72rem; color:var(--text3); margin-top:.5rem; padding:.5rem; background:rgba(255,255,255,0.03); border-radius:6px;}
+
+  /* 注意事项 */
+  .notes{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1rem; margin-bottom:.8rem;}
+  .notes .item{font-size:.78rem; color:var(--text2); padding:.3rem 0; display:flex; gap:.5rem; align-items:flex-start;}
+  .notes .item .dot{color:var(--cyan); flex-shrink:0;}
+
+  /* 底部 */
+  .footer{text-align:center; padding:1.5rem 0 .5rem; font-size:.7rem; color:var(--text3);}
+
+  /* 捡漏面板 */
+  .scavenge-panel{
+    background:linear-gradient(135deg,rgba(34,211,238,0.08),rgba(139,92,246,0.05));
+    border:1px solid rgba(34,211,238,0.2); border-radius:14px;
+    margin:1rem 0; overflow:hidden; transition:all .3s;
+  }
+  .scavenge-panel.active{border-color:var(--orange); animation:sv-glow 2s ease-in-out infinite;}
+  @keyframes sv-glow{0%,100%{box-shadow:0 0 8px rgba(255,140,66,0.15);}50%{box-shadow:0 0 20px rgba(255,140,66,0.35),0 0 40px rgba(255,140,66,0.1);}}
+  .scavenge-panel.urgent{border-color:var(--red); animation:sv-urgent .8s ease-in-out infinite;}
+  @keyframes sv-urgent{0%,100%{box-shadow:0 0 12px rgba(255,59,92,0.2);}50%{box-shadow:0 0 30px rgba(255,59,92,0.5),0 0 60px rgba(255,59,92,0.15);}}
+  .sv-header{padding:.9rem 1rem; display:flex; align-items:center; gap:.8rem; cursor:pointer;}
+  .sv-header:active{background:rgba(255,255,255,0.03);}
+  .sv-icon{font-size:1.4rem;}
+  .sv-title-area{flex:1;}
+  .sv-title{font-size:.9rem; font-weight:700; color:var(--green);}
+  .sv-status{font-size:.7rem; color:var(--text3); margin-top:.1rem;}
+  .sv-arrow{color:var(--text3); font-size:.8rem; transition:transform .2s;}
+  .sv-arrow.open{transform:rotate(180deg);}
+  .sv-body{max-height:0; overflow:hidden; transition:max-height .4s ease;}
+  .sv-body.open{max-height:1200px;}
+  .sv-intro{margin:0 1rem .8rem; padding:.8rem; border-radius:10px; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.05);}
+  .sv-intro-title{font-size:.75rem; color:var(--cyan); font-weight:600; margin-bottom:.3rem;}
+  .sv-intro-text{font-size:.73rem; color:var(--text2); line-height:1.6;}
+  .hl-cyan{color:var(--cyan); font-weight:600;}
+  .hl-red{color:var(--red); font-weight:600;}
+  .sv-timeline{padding:.5rem 1rem 0;}
+  .sv-wave{display:flex; gap:.5rem; align-items:flex-end; height:100px; padding:0 .5rem;}
+  .sv-wave-bar{flex:1; background:rgba(34,211,238,0.2); border-radius:4px 4px 0 0; position:relative; transition:all .5s; min-width:0; border:1px solid rgba(34,211,238,0.15);}
+  .sv-wave-bar span{position:absolute; bottom:-22px; left:50%; transform:translateX(-50%); font-size:.6rem; color:var(--text3); white-space:nowrap; font-family:'Courier New',monospace;}
+  .sv-wave-bar.peak{background:linear-gradient(to top,var(--orange),rgba(255,140,66,0.4)); border-color:rgba(255,140,66,0.4);}
+  .sv-wave-bar.flash{background:var(--cyan)!important; border-color:var(--cyan)!important; animation:waveFlash .5s ease-out;}
+  .sv-wave-bar.flash.peak{background:linear-gradient(to top,var(--red),var(--orange))!important; border-color:var(--red)!important;}
+  @keyframes waveFlash{0%{filter:brightness(2);}100%{filter:brightness(1);}}
+  .sv-wave-label{text-align:center; font-size:.6rem; color:var(--text3); margin-top:.3rem; padding-bottom:.5rem;}
+  .sv-alert{margin:.5rem 1rem; padding:.7rem 1rem; border-radius:8px; display:flex; align-items:center; gap:.6rem; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.05); transition:all .3s;}
+  .sv-alert.active{background:rgba(255,140,66,0.08); border-color:rgba(255,140,66,0.3);}
+  .sv-alert.urgent{background:rgba(255,59,92,0.1); border-color:rgba(255,59,92,0.3);}
+  .sv-alert-dot{width:8px; height:8px; border-radius:50%; background:var(--text3); flex-shrink:0; transition:all .3s;}
+  .sv-alert.active .sv-alert-dot{background:var(--orange); animation:dotPulse 1s ease-in-out infinite;}
+  .sv-alert.urgent .sv-alert-dot{background:var(--red); animation:dotPulse .5s ease-in-out infinite;}
+  @keyframes dotPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(1.5);}}
+  .sv-alert-text{font-size:.78rem; color:var(--text2); font-weight:500;}
+  .sv-alert.active .sv-alert-text{color:var(--orange);}
+  .sv-alert.urgent .sv-alert-text{color:var(--red); font-weight:700;}
+  .sv-checklist{padding:0 1rem;}
+  .sv-cl-item{display:flex; align-items:center; gap:.6rem; padding:.5rem 0; border-bottom:1px solid rgba(255,255,255,0.03); font-size:.75rem; transition:all .3s;}
+  .sv-cl-item:last-child{border-bottom:none;}
+  .sv-cl-item.passed{opacity:.35;}
+  .sv-cl-item.current{background:rgba(255,140,66,0.08); border-radius:8px; padding:.5rem .6rem; margin:.2rem 0; border-bottom:none;}
+  .sv-cl-item.current.peak-item{background:rgba(255,59,92,0.1);}
+  .sv-cl-dot{width:6px; height:6px; border-radius:50%; background:var(--border); flex-shrink:0; transition:all .3s;}
+  .sv-cl-item.current .sv-cl-dot{background:var(--orange);}
+  .sv-cl-item.current.peak-item .sv-cl-dot{background:var(--red); animation:dotPulse .5s ease-in-out infinite;}
+  .sv-cl-time{font-family:'Courier New',monospace; font-size:.8rem; font-weight:700; color:var(--text3); min-width:2.8rem; flex-shrink:0;}
+  .sv-cl-item.current .sv-cl-time{color:var(--orange);}
+  .sv-cl-item.current.peak-item .sv-cl-time{color:var(--red);}
+  .sv-cl-desc{flex:1; color:var(--text2);}
+  .sv-cl-item.current .sv-cl-desc{color:var(--text); font-weight:600;}
+  .sv-cl-badge{font-size:.6rem; padding:.15rem .5rem; border-radius:4px; background:rgba(255,255,255,0.04); color:var(--text3); flex-shrink:0;}
+  .sv-cl-item.current .sv-cl-badge{background:rgba(255,140,66,0.15); color:var(--orange);}
+  .sv-cl-item.current.peak-item .sv-cl-badge{background:rgba(255,59,92,0.15); color:var(--red);}
+  .sv-cl-item.passed .sv-cl-badge{background:rgba(34,211,238,0.1); color:var(--green);}
+  .sv-tip{margin:.5rem 1rem 1rem; padding:.6rem .8rem; border-radius:8px; background:rgba(0,240,255,0.05); border:1px solid rgba(0,240,255,0.1); font-size:.72rem; color:var(--cyan); text-align:center;}
+  .sv-mode-tabs{display:flex; gap:.4rem; padding:0 1rem .5rem; overflow-x:auto;}
+  .sv-tab{flex:1; padding:.4rem; text-align:center; font-size:.72rem; font-weight:600; border-radius:8px; border:1px solid var(--border); color:var(--text3); cursor:pointer; transition:all .2s; white-space:nowrap; min-width:80px;}
+  .sv-tab.active{border-color:var(--cyan); color:var(--cyan); background:rgba(0,240,255,0.08);}
+
+  /* 冲突警告 */
+  .conflict-warning{
+    background:linear-gradient(135deg,rgba(255,59,92,0.1),rgba(255,140,66,0.05));
+    border:1px solid rgba(255,59,92,0.25); border-radius:12px;
+    padding:.8rem 1rem; margin:.6rem 0;
+    font-size:.78rem; color:var(--orange);
+    display:flex; gap:.5rem; align-items:flex-start;
+  }
+  .conflict-warning .icon{flex-shrink:0;}
+
+  @media(max-width:380px){
+    .cd-num{font-size:1.8rem; min-width:2rem;}
+    .header h1{font-size:1.3rem;}
+    .status-board{gap:.4rem;}
+    .sb-card{padding:.6rem .3rem;}
+  }
+
+  /* 使用人数计数器 */
+  .counter-badge{
+    display:flex; align-items:center; justify-content:center; gap:.5rem;
+    margin-top:.8rem; padding:.5rem 1rem;
+    background:linear-gradient(135deg,rgba(34,211,238,0.08),rgba(139,92,246,0.06));
+    border:1px solid rgba(34,211,238,0.15); border-radius:2rem;
+    font-size:.8rem; color:var(--text2);
+  }
+  .counter-badge .counter-num{
+    font-weight:700; color:var(--cyan);
+    font-variant-numeric:tabular-nums;
+    font-size:.95rem;
+  }
+  .counter-badge .counter-icon{font-size:1rem;}
+
+  /* ============ 移动端全面适配 (≤480px) ============ */
+  @media(max-width:480px){
+    /* 布局 */
+    .container{padding:.7rem;}
+    .header{padding:1rem 0 .6rem;}
+    .header h1{font-size:1.25rem; letter-spacing:1px;}
+    .header .sub{font-size:.72rem;}
+    .counter-badge{font-size:.7rem; padding:.4rem .8rem; gap:.35rem;}
+    .counter-badge .counter-num{font-size:.85rem;}
+
+    /* 向导步骤指示器 */
+    .wizard-steps{gap:.3rem; margin:.6rem 0 1rem;}
+    .ws-item{font-size:.68rem; gap:.3rem;}
+    .ws-num{width:22px; height:22px; font-size:.68rem;}
+    .ws-line{width:20px;}
+
+    /* 表单 */
+    .wizard-card{padding:.9rem; border-radius:12px;}
+    .wc-title{font-size:.88rem; margin-bottom:.7rem;}
+    .form-label{font-size:.75rem;}
+    .form-input,.form-select{padding:.65rem .7rem; font-size:.85rem; border-radius:8px;}
+    .form-row{flex-direction:column; gap:.5rem;}
+    .stepper-btn{width:40px; height:40px; font-size:1.2rem;}
+    .stepper-val{font-size:1.15rem; min-width:2.5rem;}
+
+    /* 景点选择 → 单列，文字更清晰 */
+    .attraction-grid{grid-template-columns:1fr; gap:.5rem;}
+    .att-card{padding:.7rem;}
+    .att-meta{font-size:.68rem;}
+    .att-diff{font-size:.58rem;}
+
+    /* 状态看板 → 2列 */
+    .status-board{grid-template-columns:1fr 1fr; gap:.45rem;}
+    .sb-card{padding:.6rem .3rem; border-radius:10px;}
+    .sb-icon{font-size:1.2rem;}
+    .sb-name{font-size:.7rem;}
+    .sb-date{font-size:.6rem;}
+    .sb-status{font-size:.55rem; padding:.08rem .35rem;}
+
+    /* 倒计时 */
+    .countdown-box{padding:1rem .6rem;}
+    .countdown-label{font-size:.7rem;}
+    .countdown-target{font-size:.82rem; margin-bottom:.5rem;}
+    .cd-num{font-size:1.8rem; min-width:2rem;}
+    .cd-label{font-size:.55rem;}
+    .cd-sep{font-size:1.2rem;}
+
+    /* 时间线 */
+    .tl-item{padding:.65rem .7rem; gap:.5rem; border-radius:8px;}
+    .tl-time{font-size:.78rem; min-width:2.8rem;}
+    .tl-info .museum{font-size:.78rem;}
+    .tl-info .target{font-size:.65rem;}
+    .tl-badge{font-size:.55rem; padding:.12rem .4rem;}
+
+    /* 策略卡片 */
+    .sc-header{padding:.7rem; gap:.5rem;}
+    .sc-icon{font-size:1.3rem;}
+    .sc-title .name{font-size:.85rem;}
+    .sc-title .meta{font-size:.65rem;}
+    .sc-content{padding:0 .7rem .7rem;}
+    .sc-row{font-size:.75rem; gap:.4rem; padding:.4rem 0;}
+    .sc-label{min-width:3rem; font-size:.7rem;}
+    .sc-tips{padding:.5rem;}
+    .sc-tips .tip-title{font-size:.7rem;}
+    .sc-tips ol{font-size:.7rem; padding-left:1rem;}
+    .sc-warning{font-size:.68rem;}
+
+    /* 操作清单 */
+    .checklist{padding:.7rem; border-radius:10px;}
+    .cl-title{font-size:.78rem;}
+    .cl-item{font-size:.73rem; padding:.35rem 0; gap:.4rem; min-height:36px; align-items:center;}
+    .cl-checkbox{width:20px; height:20px;}
+
+    /* 儿童票指南 */
+    .child-guide{padding:.7rem; border-radius:10px;}
+    .cg-title{font-size:.78rem;}
+    .cg-item{font-size:.73rem; gap:.4rem;}
+    .cg-item .museum{min-width:2.5rem; font-size:.73rem;}
+    .cg-note{font-size:.68rem; padding:.4rem;}
+
+    /* 注意事项 */
+    .notes{padding:.7rem; border-radius:10px;}
+    .notes .item{font-size:.73rem;}
+
+    /* 实战经验 */
+    .lessons{padding:.7rem; border-radius:10px;}
+    .ls-title{font-size:.78rem;}
+    .ls-item{font-size:.72rem;}
+
+    /* 捡漏面板 */
+    .sv-header{padding:.7rem; gap:.5rem;}
+    .sv-icon{font-size:1.2rem;}
+    .sv-title{font-size:.82rem;}
+    .sv-status{font-size:.65rem;}
+    .sv-intro{margin:0 .7rem .6rem; padding:.6rem;}
+    .sv-intro-title{font-size:.7rem;}
+    .sv-intro-text{font-size:.68rem;}
+    .sv-timeline{padding:.4rem .7rem 0;}
+    .sv-wave{height:80px; gap:.3rem; padding:0 .2rem;}
+    .sv-wave-bar span{font-size:.55rem;}
+    .sv-wave-label{font-size:.55rem;}
+    .sv-alert{margin:.4rem .7rem; padding:.5rem .7rem; gap:.5rem;}
+    .sv-alert-text{font-size:.72rem;}
+    .sv-checklist{padding:0 .7rem;}
+    .sv-cl-item{font-size:.7rem; gap:.4rem; padding:.4rem 0;}
+    .sv-cl-time{font-size:.72rem; min-width:2.5rem;}
+    .sv-cl-desc{font-size:.7rem;}
+    .sv-cl-badge{font-size:.55rem; padding:.1rem .4rem;}
+    .sv-tip{margin:.4rem .7rem .7rem; padding:.5rem .6rem; font-size:.68rem;}
+    .sv-mode-tabs{padding:0 .7rem .4rem; gap:.3rem;}
+    .sv-tab{min-width:65px; font-size:.68rem; padding:.35rem;}
+
+    /* 按钮 */
+    .btn{padding:.7rem 1rem; font-size:.82rem; min-height:44px;}
+    .plan-back{font-size:.72rem; padding:.35rem .6rem;}
+
+    /* section标题 */
+    .section-title{font-size:.78rem; margin:1rem 0 .6rem;}
+
+    /* 底部 */
+    .footer{font-size:.65rem; padding:1rem 0 .3rem;}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ============ 向导视图 ============ -->
+  <div id="view-wizard">
+    <div class="header">
+      <h1>🎫 北京亲子游安心预约助手</h1>
+      <div class="sub">输入行程 → 选择景点 → 自动生成安心预约方案</div>
+      <div class="counter-badge">
+        <span class="counter-icon">👨‍👩‍👧‍👦</span>
+        <span>已有</span>
+        <span class="counter-num" id="user-counter">128</span>
+        <span>位家长正在使用安心预约</span>
+      </div>
+    </div>
+
+    <!-- 步骤指示器 -->
+    <div class="wizard-steps">
+      <div class="ws-item active" id="ws1"><div class="ws-num">1</div><span>出行信息</span></div>
+      <div class="ws-line" id="wsl1"></div>
+      <div class="ws-item" id="ws2"><div class="ws-num">2</div><span>选择景点</span></div>
+      <div class="ws-line" id="wsl2"></div>
+      <div class="ws-item" id="ws3"><div class="ws-num">3</div><span>生成方案</span></div>
+    </div>
+
+    <!-- Step 1: 出行信息 -->
+    <div id="wizard-step1" class="wizard-step">
+      <div class="wizard-card">
+        <div class="wc-title"><span class="icon">📅</span>出行信息</div>
+        <div class="form-group">
+          <label class="form-label">到京日期</label>
+          <input type="date" class="form-input" id="inp-arrival">
+        </div>
+        <div class="form-group">
+          <label class="form-label">游玩天数</label>
+          <div class="stepper">
+            <div class="stepper-btn" onclick="adjustDays(-1)">−</div>
+            <div class="stepper-val" id="inp-days">5</div>
+            <div class="stepper-btn" onclick="adjustDays(1)">+</div>
+          </div>
+        </div>
+      </div>
+      <div class="wizard-card">
+        <div class="wc-title"><span class="icon">👨‍👩‍👧</span>出行人数</div>
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">成人</label>
+            <div class="stepper">
+              <div class="stepper-btn" onclick="adjustAdults(-1)">−</div>
+              <div class="stepper-val" id="inp-adults">2</div>
+              <div class="stepper-btn" onclick="adjustAdults(1)">+</div>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">儿童</label>
+            <div class="stepper">
+              <div class="stepper-btn" onclick="adjustChildren(-1)">−</div>
+              <div class="stepper-val" id="inp-children">1</div>
+              <div class="stepper-btn" onclick="adjustChildren(1)">+</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:.8rem;" id="child-ages-group">
+          <label class="form-label">儿童年龄（用于匹配免票/优惠政策）</label>
+          <input type="text" class="form-input" id="inp-childAges" placeholder="如：8岁、6岁" value="8岁">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="goStep(2)">下一步：选择景点 →</button>
+    </div>
+
+    <!-- Step 2: 景点选择 -->
+    <div id="wizard-step2" class="wizard-step" style="display:none;">
+      <div class="wizard-card">
+        <div class="wc-title"><span class="icon">🏛️</span>选择想去的景点</div>
+        <div style="font-size:.75rem;color:var(--text3);margin-bottom:.8rem;">
+          勾选你想去的需要预约的景点，系统会自动计算放票时间和预约策略
+        </div>
+        <div class="attraction-grid" id="attraction-grid"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goStep(1)">← 上一步</button>
+        <button class="btn btn-primary" onclick="goStep(3)" id="btn-to-confirm">下一步：确认 →</button>
+      </div>
+    </div>
+
+    <!-- Step 3: 确认生成 -->
+    <div id="wizard-step3" class="wizard-step" style="display:none;">
+      <div class="wizard-card">
+        <div class="wc-title"><span class="icon">✅</span>确认行程信息</div>
+        <div class="summary-box" id="summary-box"></div>
+        <div class="conflict-warning" id="conflict-warnings" style="display:none;"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goStep(2)">← 上一步</button>
+        <button class="btn btn-primary" onclick="generateAndShowPlan()">🚀 生成预约方案</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 方案视图 ============ -->
+  <div id="view-plan">
+    <div class="plan-header">
+      <div class="plan-back" onclick="resetPlan()">← 重新规划</div>
+    </div>
+
+    <div class="header">
+      <h1>⚡ 安心预约指挥中心</h1>
+      <div class="sub" id="plan-sub">北京热门景点预约 · 实时倒计时 · 预约策略</div>
+      <div class="tags" id="plan-tags"></div>
+    </div>
+
+    <div class="status-board" id="status-board"></div>
+    <div class="urgent-banner" id="urgentBanner" style="display:none;">
+      <div class="urgent-icon">🚨</div>
+      <div class="urgent-text">
+        <div class="title" id="urgentTitle"></div>
+        <div class="desc" id="urgentDesc"></div>
+      </div>
+    </div>
+    <div class="countdown-box">
+      <div class="countdown-label">距离下一个放票窗口</div>
+      <div class="countdown-target" id="cdTarget">📅 计算中...</div>
+      <div class="countdown-timer" id="cdTimer">
+        <div class="cd-unit"><span class="cd-num" id="cdD">00</span><div class="cd-label">天</div></div>
+        <span class="cd-sep">:</span>
+        <div class="cd-unit"><span class="cd-num" id="cdH">00</span><div class="cd-label">时</div></div>
+        <span class="cd-sep">:</span>
+        <div class="cd-unit"><span class="cd-num" id="cdM">00</span><div class="cd-label">分</div></div>
+        <span class="cd-sep">:</span>
+        <div class="cd-unit"><span class="cd-num" id="cdS">00</span><div class="cd-label">秒</div></div>
+      </div>
+    </div>
+
+    <div id="conflict-section"></div>
+
+    <div class="lessons" id="lessons-box"></div>
+
+    <div class="scavenge-panel" id="scavengePanel" style="display:none;">
+      <div class="sv-header" onclick="toggleScavenge(this)">
+        <div class="sv-icon">🔍</div>
+        <div class="sv-title-area">
+          <div class="sv-title">捡漏监控</div>
+          <div class="sv-status" id="svStatus">等待放票窗口...</div>
+        </div>
+        <div class="sv-arrow">▼</div>
+      </div>
+      <div class="sv-body" id="svBody">
+        <div class="sv-mode-tabs" id="svTabs"></div>
+        <div class="sv-intro">
+          <div class="sv-intro-title">💡 回流票原理</div>
+          <div class="sv-intro-text">
+            预约到票但<span class="hl-red">15分钟内未付款</span>的订单会被释放回流。
+            第一个回流高峰约在放票后<span class="hl-cyan">5-8分钟</span>，
+            主回流波在<span class="hl-cyan">15分钟</span>左右。
+            不要放弃，持续刷新到放票后30分钟！
+          </div>
+        </div>
+        <div class="sv-timeline" id="svTimeline">
+          <div class="sv-wave" id="svWave"></div>
+          <div class="sv-wave-label" id="svWaveLabel">← 回流票量预估 →</div>
+        </div>
+        <div class="sv-alert" id="svAlert">
+          <div class="sv-alert-dot"></div>
+          <div class="sv-alert-text" id="svAlertText">尚未进入捡漏窗口</div>
+        </div>
+        <div class="sv-checklist" id="svChecklist"></div>
+        <div class="sv-tip">⚡ 到时间点后，立即去小程序刷新页面，看到"可预约"立刻提交！</div>
+      </div>
+    </div>
+
+    <div class="section-title">📋 预约时间线</div>
+    <div class="timeline" id="timeline"></div>
+
+    <div class="section-title">🎯 预约策略</div>
+    <div id="strategy-container"></div>
+
+    <div class="section-title">✅ 操作清单</div>
+    <div id="checklist-container"></div>
+
+    <div class="section-title">👶 儿童票指南</div>
+    <div id="child-guide-container"></div>
+
+    <div class="section-title">⚠️ 重要提醒</div>
+    <div class="notes" id="notes-container"></div>
+
+    <div class="section-title">🗓️ 推荐参观日程</div>
+    <div class="notes" id="schedule-container"></div>
+
+    <div class="footer" id="plan-footer"></div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+//  北京亲子游安心预约助手
+//  数据更新于 2026/07/24 · 以官方信息为准
+// ============================================================
+
+// 使用人数计数器
+(function initUserCounter() {
+  const KEY_VISITED = 'bbj_visited';
+  const KEY_COUNT = 'bbj_user_count';
+  const KEY_VERSION = 'bbj_counter_version';
+  const CURRENT_VERSION = '2';
+  const BASE_COUNT = 128; // 基础用户数
+
+  // 版本不一致时重置（用于调整基础值）
+  if (localStorage.getItem(KEY_VERSION) !== CURRENT_VERSION) {
+    localStorage.setItem(KEY_COUNT, BASE_COUNT);
+    localStorage.setItem(KEY_VERSION, CURRENT_VERSION);
+    // 顺便清掉 visited，让老用户重新 +1
+    localStorage.removeItem(KEY_VISITED);
+  }
+
+  let total = parseInt(localStorage.getItem(KEY_COUNT)) || BASE_COUNT;
+  if (!localStorage.getItem(KEY_VISITED)) {
+    total += 1;
+    localStorage.setItem(KEY_COUNT, total);
+    localStorage.setItem(KEY_VISITED, '1');
+  }
+
+  const el = document.getElementById('user-counter');
+  if (!el) return;
+  const duration = 1200;
+  const start = performance.now();
+  const from = Math.max(BASE_COUNT, total - 50);
+  function tick(now) {
+    const p = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    const cur = Math.round(from + (total - from) * ease);
+    el.textContent = cur.toLocaleString();
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+
+// ==================== 景点数据库 ====================
+const ATTRACTIONS = {
+  gugong: {
+    id:'gugong', name:'故宫博物院', icon:'🏯',
+    channel:'微信小程序「故宫博物院」（唯一官方）',
+    bookingDays:7,
+    releaseTimes:[{hour:20,minute:0}],
+    price:'旺季60元/淡季40元 · 18岁以下免费（0元票） · 珍宝馆+钟表馆各10元',
+    childPolicy:'18岁以下免费，需预约0元票；看到免费票可订立刻下手',
+    closedDays:[1],
+    timeSlots:['上午场(8:30-12:00)','下午场(11:00后入馆)'],
+    difficulty:'hard',
+    entrance:'午门（南门）唯一入口 · 单向游览',
+    penalty:'180天内3次爽约 → 60天不能预约',
+    notes:'故宫明确声明未授权任何第三方，找黄牛有风险',
+    strategy:[
+      '19:58 进入购票页面，选好日期+上午场，预填所有信息',
+      '20:00 整立刻提交！先选大门票，别纠结珍宝馆钟表馆',
+      '约不到别放弃：20:05-20:30 持续刷新捡漏回流票（约300-500张）',
+      '次日早 8:05 左右可能有小量余票释放',
+      '看到免费票立刻下单别犹豫！',
+      '多人出行可分单预约，一个账号最多绑5人，多设备并行',
+      '别频繁刷新触发风控；别找黄牛',
+    ],
+    scavengeConfig:{
+      checkpoints:[
+        {offset:5,label:'第一波小回流',desc:'部分用户未付款，订单开始释放',peak:false,height:'40%'},
+        {offset:10,label:'回流增大',desc:'持续有人放弃，票量增多',peak:false,height:'65%'},
+        {offset:15,label:'🔥 主回流波',desc:'15分钟未付款订单集中释放，约300-500张！',peak:true,height:'100%'},
+        {offset:20,label:'次回流波',desc:'后续未付款继续释放',peak:false,height:'70%'},
+        {offset:25,label:'尾波回流',desc:'零散释放，还有机会',peak:false,height:'45%'},
+        {offset:30,label:'最后机会',desc:'零星票源，最后冲刺',peak:false,height:'30%'},
+      ],
+    },
+  },
+  guobo: {
+    id:'guobo', name:'国家博物馆', icon:'🏛️',
+    channel:'微信小程序「国家博物馆」/「国家博物馆官方预约」',
+    bookingDays:7,
+    releaseTimes:[{hour:17,minute:0}],
+    price:'免费',
+    childPolicy:'1.3米以下免预约（需成人陪同入馆）；14岁以下需成人代约',
+    closedDays:[1],
+    timeSlots:['9:00-11:00','11:00-13:30','13:30-16:30'],
+    difficulty:'hard',
+    entrance:'北门入馆 · 天安门附近安检耗时长，至少提前1小时到',
+    penalty:'累计3次未履约 → 账号冻结30天',
+    notes:'每账号每日最多约5人，14岁以下儿童≤3人',
+    strategy:[
+      '16:55 前登录，提前存好所有参观人信息',
+      '优先选下午场(13:30-16:30)，早场秒没，下午场成功率更高',
+      '1.3米以下儿童免预约（需成人陪同入馆）',
+      '到点系统会卡，别放弃，反复点提交，5分钟内票会陆续回流',
+      '天安门附近安检耗时长，至少提前1小时到',
+    ],
+    scavengeConfig:{
+      checkpoints:[
+        {offset:5,label:'第一波小回流',desc:'部分用户未提交，订单开始释放',peak:false,height:'40%'},
+        {offset:10,label:'回流增大',desc:'持续有人放弃，票量增多',peak:false,height:'65%'},
+        {offset:15,label:'🔥 主回流波',desc:'15分钟未确认订单集中释放！',peak:true,height:'100%'},
+        {offset:20,label:'次回流波',desc:'后续未确认继续释放',peak:false,height:'70%'},
+        {offset:25,label:'尾波回流',desc:'零散释放，还有机会',peak:false,height:'45%'},
+        {offset:30,label:'最后机会',desc:'零星票源，最后冲刺',peak:false,height:'30%'},
+      ],
+    },
+  },
+  junbo: {
+    id:'junbo', name:'军事博物馆', icon:'🎖️',
+    channel:'微信公众号「中国人民革命军事博物馆」',
+    bookingDays:7,
+    releaseTimes:[{hour:8,minute:0},{hour:17,minute:0},{hour:20,minute:0}],
+    price:'免费',
+    childPolicy:'6周岁以下可由已预约大人携带现场入馆；7-14岁需成人代约',
+    closedDays:[1],
+    timeSlots:['9:00-17:00（16:00停止入馆）'],
+    difficulty:'easy',
+    entrance:'南门入馆',
+    penalty:'累计3次未履约 → 限制预约',
+    notes:'三馆中最好约，放票后很快能拿到',
+    strategy:[
+      '提前登录微信公众号，存好参观人信息',
+      '放票时间有三个：8:00 / 17:00 / 20:00，选任一时段',
+      '6岁以下儿童可由大人携带现场入馆，无需单独预约',
+      '三馆中压力最小，基本能约到',
+      '记得参观当天带身份证原件入馆',
+    ],
+    scavengeConfig:{
+      checkpoints:[
+        {offset:5,label:'第一波小回流',desc:'少量未付款释放',peak:false,height:'35%'},
+        {offset:10,label:'回流增大',desc:'票量增多',peak:false,height:'55%'},
+        {offset:15,label:'主回流波',desc:'15分钟未付款集中释放',peak:true,height:'80%'},
+        {offset:20,label:'次回流波',desc:'后续释放',peak:false,height:'50%'},
+        {offset:25,label:'尾波',desc:'零散释放',peak:false,height:'35%'},
+        {offset:30,label:'最后机会',desc:'零星票源',peak:false,height:'25%'},
+      ],
+    },
+  },
+  tiantan: {
+    id:'tiantan', name:'天坛公园', icon:'🌳',
+    channel:'微信公众号「天坛」/ 畅游公园',
+    bookingDays:7,
+    releaseTimes:[{hour:0,minute:0}],
+    price:'联票34元/门票15元 · 6岁以下免费、7-18岁半价',
+    childPolicy:'6岁以下免费；7-18岁半价；需预约免费票',
+    closedDays:[1],
+    timeSlots:['6:00-21:00（含祈年殿等景点）'],
+    difficulty:'medium',
+    entrance:'东门/西门/南门/北门均可',
+    penalty:'爽约限制预约',
+    notes:'联票含祈年殿、回音壁、圜丘；周一祈年殿等景点闭馆',
+    strategy:[
+      '提前在畅游公园或天坛公众号预约',
+      '建议买联票，含祈年殿等核心景点',
+      '周一祈年殿等室内景点闭馆，但公园正常开放',
+      '6岁以下儿童免票，需预约免费票',
+      '建议上午游览，下午去 nearby 的前门大街',
+    ],
+    scavengeConfig:null,
+  },
+  yiheyuan: {
+    id:'yiheyuan', name:'颐和园', icon:'🏞️',
+    channel:'微信公众号「颐和园」/ 畅游公园',
+    bookingDays:7,
+    releaseTimes:[{hour:0,minute:0}],
+    price:'门票30元/联票60元 · 6岁以下免费、7-18岁半价',
+    childPolicy:'6岁以下免费；7-18岁半价；需预约免费票',
+    closedDays:[],
+    timeSlots:['6:30-18:00'],
+    difficulty:'medium',
+    entrance:'东宫门/北宫门/新建宫门等',
+    penalty:'爽约限制预约',
+    notes:'无闭馆日；建议预留半天时间游览',
+    strategy:[
+      '提前在畅游公园或颐和园公众号预约',
+      '建议从东宫门进，走长廊→佛香阁→昆明湖路线',
+      '预留至少3-4小时游览',
+      '6岁以下儿童免票，需预约',
+      '夏季注意防晒，园内遮阴处少',
+    ],
+    scavengeConfig:null,
+  },
+  maozhuxi: {
+    id:'maozhuxi', name:'毛主席纪念堂', icon:'🏛️',
+    channel:'微信小程序「毛主席纪念堂预约」',
+    bookingDays:6,
+    releaseTimes:[{hour:12,minute:30}],
+    price:'免费',
+    childPolicy:'14岁以下儿童不适宜参观；建议不带小孩',
+    closedDays:[1],
+    timeSlots:['8:00-12:00'],
+    difficulty:'medium',
+    entrance:'北门入口',
+    penalty:'爽约限制预约',
+    notes:'严禁带包、手机、相机、饮水等入内，需提前寄存；着装需端庄',
+    strategy:[
+      '提前1-6天在小程序预约',
+      '严禁携带包、手机、相机、饮水等，需在天安门广场东侧寄存',
+      '着装端庄，不可穿拖鞋背心',
+      '建议不带小孩前往，14岁以下不适宜',
+      '寄存排队耗时长，至少提前1.5小时到',
+    ],
+    scavengeConfig:null,
+  },
+  ziranbowuguan: {
+    id:'ziranbowuguan', name:'国家自然博物馆', icon:'🦕',
+    channel:'微信公众号「国家自然博物馆」',
+    bookingDays:3,
+    releaseTimes:[{hour:11,minute:0}],
+    price:'免费',
+    childPolicy:'所有观众均需预约（含儿童）；1.2米以下儿童可由成人携入',
+    closedDays:[1],
+    timeSlots:['9:00-17:00（16:00停止入馆）'],
+    difficulty:'medium',
+    entrance:'北京市东城区天桥南大街126号',
+    penalty:'累计3次爽约 → 60天不能预约',
+    notes:'暑期非常热门，建议提前3天准时预约',
+    strategy:[
+      '提前3天11:00准时预约',
+      '所有观众含儿童均需预约',
+      '暑期非常热门，需准时预约',
+      '建议上午场，人相对少',
+      '适合带小孩，恐龙展厅很受欢迎',
+    ],
+    scavengeConfig:{
+      checkpoints:[
+        {offset:5,label:'第一波回流',desc:'未付款释放',peak:false,height:'40%'},
+        {offset:10,label:'回流增大',desc:'票量增多',peak:false,height:'60%'},
+        {offset:15,label:'主回流波',desc:'集中释放',peak:true,height:'90%'},
+        {offset:20,label:'次回流',desc:'后续释放',peak:false,height:'60%'},
+        {offset:25,label:'尾波',desc:'零散释放',peak:false,height:'40%'},
+        {offset:30,label:'最后机会',desc:'零星票源',peak:false,height:'25%'},
+      ],
+    },
+  },
+  yonghegong: {
+    id:'yonghegong', name:'雍和宫', icon:'🛕',
+    channel:'微信公众号「雍和宫游客信众服务」',
+    bookingDays:1,
+    releaseTimes:[{hour:0,minute:0}],
+    price:'25元 · 6岁以下免费',
+    childPolicy:'6岁以下免费；7-18岁半价',
+    closedDays:[],
+    timeSlots:['9:00-16:30'],
+    difficulty:'medium',
+    entrance:'雍和宫大街12号',
+    penalty:'爽约限制预约',
+    notes:'初一十五免费；每日限量预约',
+    strategy:[
+      '提前1天0:00预约',
+      '每日限量，暑期建议提前预约',
+      '初一十五免票但人更多',
+      '6岁以下儿童免费',
+      '附近可顺逛国子监、五道营胡同',
+    ],
+    scavengeConfig:null,
+  },
+  shoubo: {
+    id:'shoubo', name:'首都博物馆', icon:'🏢',
+    channel:'微信小程序「首都博物馆」',
+    bookingDays:7,
+    releaseTimes:[{hour:0,minute:0}],
+    price:'免费',
+    childPolicy:'所有观众均需预约；1.3米以下儿童可由成人携入',
+    closedDays:[1],
+    timeSlots:['9:00-17:00（16:00停止入馆）'],
+    difficulty:'easy',
+    entrance:'西长安街复兴门外大街16号',
+    penalty:'爽约限制预约',
+    notes:'预约较容易，适合作为备选景点',
+    strategy:[
+      '提前7天预约，相对容易约到',
+      '所有观众含儿童均需预约',
+      '适合作为备选，比国博好约很多',
+      '常设展览和临时展览都值得看',
+      '地铁1号线木樨地站直达',
+    ],
+    scavengeConfig:null,
+  },
+  gongwangfu: {
+    id:'gongwangfu', name:'恭王府', icon:'🏯',
+    channel:'微信公众号「恭王府博物馆」',
+    bookingDays:7,
+    releaseTimes:[{hour:0,minute:0}],
+    price:'40元 · 6岁以下免费、7-18岁半价',
+    childPolicy:'6岁以下免费；7-18岁半价',
+    closedDays:[1],
+    timeSlots:['8:30-17:00'],
+    difficulty:'medium',
+    entrance:'前海西街17号',
+    penalty:'爽约限制预约',
+    notes:'和珅府邸，福字碑是亮点；附近可逛什刹海',
+    strategy:[
+      '提前7天预约',
+      '建议请讲解或租语音导览，不然只是看房子',
+      '福字碑是必看亮点',
+      '6岁以下儿童免费',
+      '游览后可顺逛什刹海、南锣鼓巷',
+    ],
+    scavengeConfig:null,
+  },
+  kejiguan: {
+    id:'kejiguan', name:'中国科技馆', icon:'🔬',
+    channel:'微信公众号「中国科学技术馆」',
+    bookingDays:7,
+    releaseTimes:[{hour:0,minute:0}],
+    price:'主馆30元/儿童科学乐园30元 · 8岁以下免主馆票',
+    childPolicy:'8岁以下免主馆票；儿童科学乐园需单独购票',
+    closedDays:[1],
+    timeSlots:['9:30-17:00（16:00停止入馆）'],
+    difficulty:'medium',
+    entrance:'朝阳区北辰东路5号',
+    penalty:'爽约限制预约',
+    notes:'非常适合亲子游；儿童科学乐园需单独购票预约',
+    strategy:[
+      '提前7天预约主馆+儿童科学乐园（分开约）',
+      '儿童科学乐园非常热门，需准时预约',
+      '8岁以下免主馆票，但儿童科学乐园需购票',
+      '建议预留半天时间',
+      '地铁8号线奥林匹克公园站直达',
+    ],
+    scavengeConfig:null,
+  },
+  badaling: {
+    id:'badaling', name:'八达岭长城', icon:'🏔️',
+    channel:'微信公众号「长城内外旅游」',
+    bookingDays:7,
+    releaseTimes:[{hour:0,minute:0}],
+    price:'门票40元/缆车单程100元 · 6岁以下免费、7-18岁半价',
+    childPolicy:'6岁以下免费；7-18岁半价',
+    closedDays:[],
+    timeSlots:['6:30-16:30'],
+    difficulty:'medium',
+    entrance:'延庆区 G6京藏高速58号出口',
+    penalty:'爽约限制预约',
+    notes:'暑期人非常多；建议早出发；可乘S2线或877路公交',
+    strategy:[
+      '提前7天预约门票',
+      '建议早班出发，避开中午人流高峰',
+      '带小孩建议坐缆车上下，省体力',
+      '6岁以下儿童免费',
+      '交通：877路公交/市郊铁路S2线/自驾',
+      '带好防晒和水，长城上无遮阴',
+    ],
+    scavengeConfig:null,
+  },
+};
+
+// ==================== 全局状态 ====================
+let userTrip = null;
+let planData = null;
+let wizardStep = 1;
+let selectedAttractions = new Set();
+let wizardData = { days:5, adults:2, children:1, childAges:'8岁' };
+
+// ==================== 工具函数 ====================
+function getBeijingNow() {
+  return new Date(new Date().toLocaleString('en-US', { timeZone:'Asia/Shanghai' }));
+}
+function pad(n) { return String(n).padStart(2,'0'); }
+function dateKey(d) { return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function parseDateKey(k) { const [y,m,d] = k.split('-').map(Number); return new Date(y,m-1,d); }
+function addDays(d, n) { const r = new Date(d); r.setDate(r.getDate()+n); return r; }
+function diffDays(a, b) { return Math.round((b - a) / 86400000); }
+function dayOfWeek(d) { return d.getDay(); }
+function weekdayCN(d) { return ['日','一','二','三','四','五','六'][d.getDay()]; }
+function fmtDate(d) { return (d.getMonth()+1)+'/'+d.getDate(); }
+function fmtDateCN(d) { return (d.getMonth()+1)+'月'+d.getDate()+'日 周'+weekdayCN(d); }
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ==================== 向导逻辑 ====================
+function initWizard() {
+  const today = getBeijingNow();
+  const tomorrow = addDays(today, 1);
+  document.getElementById('inp-arrival').value = dateKey(tomorrow);
+  document.getElementById('inp-arrival').min = dateKey(today);
+
+  renderAttractionGrid();
+  updateStepIndicator();
+}
+
+function adjustDays(n) { wizardData.days = Math.max(1, Math.min(15, wizardData.days + n)); document.getElementById('inp-days').textContent = wizardData.days; }
+function adjustAdults(n) { wizardData.adults = Math.max(1, Math.min(10, wizardData.adults + n)); document.getElementById('inp-adults').textContent = wizardData.adults; }
+function adjustChildren(n) { wizardData.children = Math.max(0, Math.min(10, wizardData.children + n)); document.getElementById('inp-children').textContent = wizardData.children; document.getElementById('child-ages-group').style.display = wizardData.children > 0 ? 'block' : 'none'; }
+
+function renderAttractionGrid() {
+  const grid = document.getElementById('attraction-grid');
+  grid.innerHTML = Object.values(ATTRACTIONS).map(att => {
+    const diffLabel = att.difficulty === 'hard' ? '⭐最难预约' : att.difficulty === 'medium' ? '中等难度' : '较好约';
+    const releaseStr = att.releaseTimes.map(t => t.hour+':'+pad(t.minute)).join('/');
+    const closedStr = att.closedDays.length ? '周'+att.closedDays.map(d => '日一二三四五六'[d]).join('/')+'闭馆' : '无闭馆日';
+    return `<div class="att-card" onclick="toggleAttraction('${att.id}', this)" data-id="${att.id}">
+      <div class="att-icon">${att.icon}</div>
+      <div class="att-name">${att.name}</div>
+      <div class="att-meta">${releaseStr}放票 · 提前${att.bookingDays}天</div>
+      <div class="att-meta">${att.price.split('·')[0]}</div>
+      <div class="att-meta">${closedStr}</div>
+      <div class="att-diff ${att.difficulty}">${diffLabel}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleAttraction(id, el) {
+  if (selectedAttractions.has(id)) { selectedAttractions.delete(id); el.classList.remove('selected'); }
+  else { selectedAttractions.add(id); el.classList.add('selected'); }
+  document.getElementById('btn-to-confirm').disabled = selectedAttractions.size === 0;
+}
+
+function goStep(step) {
+  if (step === 3 && selectedAttractions.size === 0) { return; }
+  if (step === 2) { wizardData.arrivalDate = document.getElementById('inp-arrival').value; wizardData.childAges = document.getElementById('inp-childAges').value; }
+  wizardStep = step;
+  document.querySelectorAll('.wizard-step').forEach(el => el.style.display = 'none');
+  document.getElementById('wizard-step'+step).style.display = 'block';
+  updateStepIndicator();
+  if (step === 3) renderSummary();
+  window.scrollTo(0, 0);
+}
+
+function updateStepIndicator() {
+  for (let i = 1; i <= 3; i++) {
+    const el = document.getElementById('ws'+i);
+    el.classList.remove('active','done');
+    if (i < wizardStep) el.classList.add('done');
+    if (i === wizardStep) el.classList.add('active');
+  }
+  document.getElementById('wsl1').classList.toggle('active', wizardStep >= 2);
+  document.getElementById('wsl2').classList.toggle('active', wizardStep >= 3);
+}
+
+function renderSummary() {
+  const arrival = parseDateKey(wizardData.arrivalDate);
+  const departure = addDays(arrival, wizardData.days - 1);
+  const atts = Array.from(selectedAttractions).map(id => ATTRACTIONS[id]);
+  const party = wizardData.adults + '大' + (wizardData.children > 0 ? '+' + wizardData.children + '小' : '');
+
+  let html = '';
+  html += `<div class="summary-row"><span class="label">到京日期</span><span class="value">${fmtDateCN(arrival)}</span></div>`;
+  html += `<div class="summary-row"><span class="label">离京日期</span><span class="value">${fmtDateCN(departure)}</span></div>`;
+  html += `<div class="summary-row"><span class="label">游玩天数</span><span class="value">${wizardData.days} 天</span></div>`;
+  html += `<div class="summary-row"><span class="label">出行人数</span><span class="value">${party}${wizardData.children > 0 ? '（'+wizardData.childAges+'）' : ''}</span></div>`;
+  html += `<div class="summary-row"><span class="label">已选景点</span><span class="value">${atts.length} 个</span></div>`;
+  html += `<div class="summary-attractions">${atts.map(a => `<span class="summary-tag">${a.icon} ${a.name}</span>`).join('')}</div>`;
+  document.getElementById('summary-box').innerHTML = html;
+
+  const conflicts = detectConflicts(arrival, departure, atts);
+  const warnEl = document.getElementById('conflict-warnings');
+  if (conflicts.length > 0) {
+    warnEl.style.display = 'flex';
+    warnEl.innerHTML = `<div class="icon">⚠️</div><div>${conflicts.join('<br>')}</div>`;
+  } else {
+    warnEl.style.display = 'none';
+  }
+}
+
+function detectConflicts(arrival, departure, atts) {
+  const conflicts = [];
+  const now = getBeijingNow();
+
+  // 闭馆日冲突
+  for (let d = new Date(arrival); d <= departure; d = addDays(d, 1)) {
+    const dow = d.getDay();
+    const closed = atts.filter(a => a.closedDays.includes(dow));
+    if (closed.length > 0 && closed.length === atts.length) {
+      conflicts.push(`${fmtDate(d)} 周${weekdayCN(d)}：所有选中景点均闭馆，安排其他活动`);
+    }
+  }
+
+  // 放票时间重叠
+  const releaseMap = {};
+  atts.forEach(att => {
+    att.releaseTimes.forEach(rt => {
+      att.closedDays.forEach(() => {});
+    });
+  });
+
+  // 同一日期同一时间段多个景点放票
+  const timeSlots = {};
+  atts.forEach(att => {
+    for (let d = new Date(arrival); d <= departure; d = addDays(d, 1)) {
+      const visitKey = dateKey(d);
+      const releaseDate = addDays(d, -att.bookingDays);
+      att.releaseTimes.forEach(rt => {
+        const slotKey = dateKey(releaseDate) + '_' + rt.hour + ':' + pad(rt.minute);
+        if (!timeSlots[slotKey]) timeSlots[slotKey] = [];
+        timeSlots[slotKey].push(att.name);
+      });
+    }
+  });
+  Object.entries(timeSlots).forEach(([slot, names]) => {
+    if (names.length > 1) {
+      const [d, t] = slot.split('_');
+      conflicts.push(`${d} ${t} 有 ${names.length} 个景点同时放票：${names.join('、')}，建议多设备并行预约`);
+    }
+  });
+
+  // 放票日期已过 - 按景点聚合，避免刷屏
+  const expiredMap = {};
+  atts.forEach(att => {
+    expiredMap[att.id] = { name: att.name, dates: [] };
+    for (let d = new Date(arrival); d <= departure; d = addDays(d, 1)) {
+      const releaseDate = addDays(d, -att.bookingDays);
+      const releaseDateTime = new Date(releaseDate);
+      att.releaseTimes.forEach(rt => {
+        releaseDateTime.setHours(rt.hour, rt.minute, 0, 0);
+        if (releaseDateTime < now) {
+          expiredMap[att.id].dates.push(fmtDate(d));
+        }
+      });
+    }
+  });
+  Object.values(expiredMap).forEach(item => {
+    if (item.dates.length === 0) return;
+    if (item.dates.length === 1) {
+      conflicts.push(`${item.name} ${item.dates[0]} 的放票时间已过，可能无法预约`);
+    } else {
+      const start = item.dates[0];
+      const end = item.dates[item.dates.length - 1];
+      conflicts.push(`${item.name} ${start} 至 ${end} 共 ${item.dates.length} 个放票时间已过，可能无法预约`);
+    }
+  });
+
+  return conflicts;
+}
+
+// ==================== 方案生成引擎 ====================
+function generatePlan(trip) {
+  const arrival = parseDateKey(trip.arrivalDate);
+  const departure = addDays(arrival, trip.days - 1);
+  const now = getBeijingNow();
+  const atts = trip.selectedAttractions.map(id => ATTRACTIONS[id]);
+
+  // 生成游玩日期列表
+  const visitDates = [];
+  for (let d = new Date(arrival); d <= departure; d = addDays(d, 1)) {
+    visitDates.push(new Date(d));
+  }
+
+  // 生成预约时间线
+  const bookingWindows = [];
+  atts.forEach(att => {
+    visitDates.forEach(vd => {
+      const dow = vd.getDay();
+      if (att.closedDays.includes(dow)) return; // 跳过闭馆日
+      const releaseDate = addDays(vd, -att.bookingDays);
+      att.releaseTimes.forEach(rt => {
+        const releaseDT = new Date(releaseDate);
+        releaseDT.setHours(rt.hour, rt.minute, 0, 0);
+        const diff = (releaseDT - now) / 3600000;
+        let priority = 'low';
+        if (diff < 0) priority = 'missed';
+        else if (diff < 6) priority = 'critical';
+        else if (diff < 24) priority = 'high';
+        else if (diff < 72) priority = 'medium';
+
+        bookingWindows.push({
+          ts: releaseDT,
+          attId: att.id,
+          attName: att.name,
+          attIcon: att.icon,
+          visitDate: new Date(vd),
+          releaseTime: rt.hour+':'+pad(rt.minute),
+          priority,
+          type: 'release',
+        });
+      });
+    });
+  });
+  bookingWindows.sort((a, b) => a.ts - b.ts);
+  // 只保留未来可操作的预约窗口，已错过的不再刷屏时间线和操作清单
+  const futureWindows = bookingWindows.filter(w => w.ts >= now);
+  bookingWindows.splice(0, bookingWindows.length, ...futureWindows);
+
+  // 生成日程建议（避开闭馆日）
+  const schedule = visitDates.map(vd => {
+    const dow = vd.getDay();
+    const available = atts.filter(a => !a.closedDays.includes(dow));
+    const closed = atts.filter(a => a.closedDays.includes(dow));
+    return { date: vd, weekday: dow, available, closed };
+  });
+
+  // 冲突检测
+  const conflicts = detectConflicts(arrival, departure, atts);
+
+  // 通用经验
+  const lessons = [
+    '看到免费票立刻下单——犹豫几秒就被约满',
+    '上午场比下午场有票的概率更小（尤其故宫），但上午场游览时间更充裕',
+    '"请稍候"不等于"约满"——系统排队加载时别退出，耐心等30-60秒',
+    '别频繁切换日期/刷新——每次切换都是新请求，容易触发风控或被卡出去',
+    '分单预约成功率更高——别一个订单约所有人，分成单人单更灵活',
+    '多设备并行——手机+平板同时上线，不同账号分头预约不同景点',
+    '网络切换到4G/5G——避免WiFi多人同IP被风控',
+    '身份信息提前复制到手机备忘录——到点直接粘贴，省几秒就是成败之差',
+  ];
+
+  return { arrival, departure, visitDates, atts, bookingWindows, schedule, conflicts, lessons, trip };
+}
+
+// ==================== 方案页面渲染 ====================
+function renderPlan() {
+  const p = planData;
+  const trip = p.trip;
+
+  // 头部标签
+  const tags = document.getElementById('plan-tags');
+  const party = trip.adults + '大' + (trip.children > 0 ? '+' + trip.children + '小' : '');
+  tags.innerHTML = `
+    <span class="tag active">${fmtDate(p.arrival)} - ${fmtDate(p.departure)} 出行</span>
+    <span class="tag active">${party}</span>
+    <span class="tag">${p.atts.length}个景点</span>
+  `;
+
+  // 状态看板
+  renderStatusBoard();
+
+  // 倒计时 & 紧急横幅在 updateCountdown 中处理
+  updateCountdown();
+
+  // 冲突警告
+  const cs = document.getElementById('conflict-section');
+  if (p.conflicts.length > 0) {
+    cs.innerHTML = p.conflicts.map(c => `<div class="conflict-warning"><div class="icon">⚠️</div><div>${c}</div></div>`).join('');
+  } else {
+    cs.innerHTML = '';
+  }
+
+  // 经验
+  renderLessons();
+
+  // 捡漏面板
+  renderScavengePanel();
+
+  // 时间线
+  renderTimeline();
+
+  // 策略卡片
+  renderStrategyCards();
+
+  // 操作清单
+  renderChecklists();
+
+  // 儿童票指南
+  renderChildGuide();
+
+  // 重要提醒
+  renderNotes();
+
+  // 日程推荐
+  renderSchedule();
+
+  // 底部
+  document.getElementById('plan-footer').innerHTML =
+    `⚡ 北京亲子游安心预约助手 · 数据更新于 2026/07/24<br>` +
+    `景点放票规则以官方为准 · 祝预约顺利！💪`;
+}
+
+function renderStatusBoard() {
+  const p = planData;
+  const now = getBeijingNow();
+  const board = document.getElementById('status-board');
+
+  // 为每个景点的每个游玩日期生成一个卡片
+  const cards = [];
+  let missedCount = 0;
+  let doneCount = 0;
+  p.atts.forEach(att => {
+    p.visitDates.forEach(vd => {
+      const dow = vd.getDay();
+      if (att.closedDays.includes(dow)) return;
+      const releaseDate = addDays(vd, -att.bookingDays);
+      const releaseDT = new Date(releaseDate);
+      att.releaseTimes.forEach(rt => {
+        releaseDT.setHours(rt.hour, rt.minute, 0, 0);
+        let status, label;
+        const key = att.id + '_' + dateKey(vd);
+        if (releaseDT < now) {
+          // 检查是否已标记完成
+          if (localStorage.getItem('ticket_done_' + key) === '1') { status = 'done'; label = '✅ 已约上'; doneCount++; }
+          else { status = 'missed'; label = '⏰ 已过'; missedCount++; }
+        } else {
+          const diff = (releaseDT - now) / 3600000;
+          if (diff < 6) { status = 'pending'; label = '⏳ ' + att.releaseTimes.map(t => t.hour+':'+pad(t.minute)).join('/') ; }
+          else { status = 'pending'; label = '⏳ ' + fmtDate(releaseDate); }
+        }
+        cards.push({ att, visitDate: vd, releaseDT, status, label, key, uniqueKey: att.id+'_'+dateKey(vd) });
+      });
+    });
+  });
+
+  // 去重（同一景点同一日期只显示一个卡片）
+  const seen = new Set();
+  const unique = cards.filter(c => {
+    if (seen.has(c.uniqueKey)) return false;
+    seen.add(c.uniqueKey);
+    return true;
+  });
+
+  // 看板只显示可操作的：待预约 + 已约上；已过的不占位置
+  const actionable = unique.filter(c => c.status !== 'missed');
+
+  if (actionable.length === 0) {
+    board.style.gridTemplateColumns = '1fr';
+    board.innerHTML = `<div class="sb-empty">
+      <div class="sb-empty-icon">🎉</div>
+      <div class="sb-empty-title">当前没有待预约的景点</div>
+      <div class="sb-empty-desc">${missedCount > 0 ? '有 ' + missedCount + ' 个放票时间已过，已自动隐藏。' : ''}所有可预约窗口都会显示在这里。</div>
+    </div>`;
+    return;
+  }
+
+  board.style.gridTemplateColumns = actionable.length <= 3 ? '1fr 1fr 1fr' : '1fr 1fr 1fr';
+
+  board.innerHTML = actionable.map(c => {
+    return `<div class="sb-card ${c.status}" onclick="markDone('${c.key}', this)">
+      <div class="sb-icon">${c.att.icon}</div>
+      <div class="sb-name">${c.att.name}</div>
+      <div class="sb-date">${fmtDate(c.visitDate)} 周${weekdayCN(c.visitDate)}</div>
+      <div class="sb-status">${c.label}</div>
+    </div>`;
+  }).join('');
+}
+
+function markDone(key, el) {
+  const done = localStorage.getItem('ticket_done_' + key) === '1';
+  if (done) {
+    localStorage.removeItem('ticket_done_' + key);
+  } else {
+    localStorage.setItem('ticket_done_' + key, '1');
+  }
+  renderStatusBoard();
+}
+
+function renderLessons() {
+  const p = planData;
+  const box = document.getElementById('lessons-box');
+  box.innerHTML = `
+    <div class="ls-title">📝 预约实用经验总结</div>
+    ${p.lessons.map((l, i) => `<div class="ls-item"><span class="num">${i+1}.</span><div>${l}</div></div>`).join('')}
+  `;
+}
+
+function renderTimeline() {
+  const p = planData;
+  const now = getBeijingNow();
+  const tl = document.getElementById('timeline');
+  if (p.bookingWindows.length === 0) {
+    tl.innerHTML = '<div style="text-align:center;color:var(--text3);padding:1rem;font-size:.8rem;">暂无预约时间线</div>';
+    return;
+  }
+
+  let lastDate = '';
+  p.bookingWindows.forEach(w => {
+    const dk = dateKey(w.ts);
+    if (dk !== lastDate) {
+      lastDate = dk;
+      const isToday = dk === dateKey(now);
+      const isTomorrow = dk === dateKey(addDays(now, 1));
+      const label = isToday ? '今天 '+fmtDate(w.ts) : isTomorrow ? '明天 '+fmtDate(w.ts) : fmtDateCN(w.ts);
+      const sep = document.createElement('div');
+      sep.style.cssText = 'font-size:.7rem;color:var(--text3);padding:.4rem 0 .2rem;font-weight:600;';
+      sep.textContent = label;
+      tl.appendChild(sep);
+    }
+
+    const isDone = localStorage.getItem('ticket_done_' + w.attId + '_' + dateKey(w.visitDate)) === '1';
+    const isMissed = w.priority === 'missed';
+    const isPast = w.ts < now;
+    const priorityClass = isPast ? (isDone ? 'done' : (isMissed ? 'missed' : 'done')) : w.priority;
+    const badgeText = isDone ? '已约上' : isMissed ? '已错过' : isPast ? '已过' : (w.priority==='critical'?'紧急':w.priority==='high'?'重要':w.priority==='medium'?'备选':'待预约');
+
+    const item = document.createElement('div');
+    item.className = 'tl-item ' + priorityClass;
+    item.innerHTML = `
+      <div class="tl-time ${isPast?'':w.priority}">${w.releaseTime}</div>
+      <div class="tl-info">
+        <div class="museum">${w.attIcon} ${w.attName}</div>
+        <div class="target">参观日期：${fmtDate(w.visitDate)} 周${weekdayCN(w.visitDate)}</div>
+      </div>
+      <div class="tl-badge ${isDone?'done':isMissed?'missed':isPast?'done':w.priority}">${badgeText}</div>
+    `;
+    tl.appendChild(item);
+  });
+}
+
+function renderStrategyCards() {
+  const p = planData;
+  const container = document.getElementById('strategy-container');
+  container.innerHTML = p.atts.map(att => {
+    const diffLabel = att.difficulty === 'hard' ? '⭐最难预约' : att.difficulty === 'medium' ? '中等难度' : '较好约';
+    const releaseStr = att.releaseTimes.map(t => t.hour+':'+pad(t.minute)).join(' / ');
+    const closedStr = att.closedDays.length ? '周'+att.closedDays.map(d => '日一二三四五六'[d]).join('/')+'闭馆' : '无闭馆日';
+    const hasWarning = att.id === 'maozhuxi';
+    return `<div class="strategy-card">
+      <div class="sc-header" onclick="toggleCard(this)">
+        <div class="sc-icon">${att.icon}</div>
+        <div class="sc-title">
+          <div class="name">${att.name}</div>
+          <div class="meta">提前${att.bookingDays}天 · ${releaseStr}放票 · ${diffLabel}</div>
+        </div>
+        <div class="sc-arrow">▼</div>
+      </div>
+      <div class="sc-body">
+        <div class="sc-content">
+          <div class="sc-row"><div class="sc-label">渠道</div><div class="sc-value highlight">${att.channel}</div></div>
+          <div class="sc-row"><div class="sc-label">放票</div><div class="sc-value">提前 <b>${att.bookingDays}天</b> · ${releaseStr} 准时放票</div></div>
+          <div class="sc-row"><div class="sc-label">票价</div><div class="sc-value">${att.price}</div></div>
+          <div class="sc-row"><div class="sc-label">儿童</div><div class="sc-value">${att.childPolicy}</div></div>
+          <div class="sc-row"><div class="sc-label">时段</div><div class="sc-value">${att.timeSlots.join(' / ')}</div></div>
+          <div class="sc-row"><div class="sc-label">闭馆</div><div class="sc-value">${closedStr}</div></div>
+          <div class="sc-row"><div class="sc-label">入口</div><div class="sc-value">${att.entrance}</div></div>
+          <div class="sc-row"><div class="sc-label">爽约</div><div class="sc-value warn">${att.penalty}</div></div>
+          ${att.notes ? `<div class="sc-row"><div class="sc-label">备注</div><div class="sc-value">${att.notes}</div></div>` : ''}
+          <div class="sc-tips">
+            <div class="tip-title">🔥 预约核心策略</div>
+            <ol>${att.strategy.map(s => '<li>'+s+'</li>').join('')}</ol>
+          </div>
+          ${hasWarning ? `<div class="sc-warning">⚠️ ${att.notes}</div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // 默认展开第一个
+  const firstBody = container.querySelector('.sc-body');
+  if (firstBody) { firstBody.classList.add('open'); firstBody.previousElementSibling.querySelector('.sc-arrow').classList.add('open'); }
+}
+
+function renderChecklists() {
+  const p = planData;
+  const now = getBeijingNow();
+  const container = document.getElementById('checklist-container');
+  container.innerHTML = '';
+
+  // 按放票日期分组
+  const grouped = {};
+  p.bookingWindows.forEach(w => {
+    const dk = dateKey(w.ts);
+    if (!grouped[dk]) grouped[dk] = [];
+    grouped[dk].push(w);
+  });
+
+  Object.entries(grouped).forEach(([dk, windows]) => {
+    const d = parseDateKey(dk);
+    const isToday = dk === dateKey(now);
+    const label = isToday ? '今天 '+fmtDate(d) : fmtDateCN(d);
+
+    const cl = document.createElement('div');
+    cl.className = 'checklist';
+
+    let items = '';
+    // 准备项
+    items += `<div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-checkbox"></div>
+      <div>提前确认所有参观人信息已填好（姓名+身份证号）</div>
+    </div>`;
+    items += `<div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-checkbox"></div>
+      <div>网络切换到 4G/5G（避免WiFi多人同IP被风控）</div>
+    </div>`;
+
+    windows.forEach(w => {
+      const isMissed = w.priority === 'missed';
+      if (isMissed) {
+        items += `<div class="cl-item" style="opacity:.4;">
+          <div class="cl-checkbox"></div>
+          <div>⚠️ ${w.attIcon} ${w.attName} ${fmtDate(w.visitDate)} 放票已过期</div>
+        </div>`;
+        return;
+      }
+      items += `<div class="cl-item" onclick="toggleCheck(this)">
+        <div class="cl-checkbox"></div>
+        <div><b>${w.releaseTime}</b> → ${w.attIcon} ${w.attName} 预约 ${fmtDate(w.visitDate)} 票</div>
+      </div>`;
+      items += `<div class="cl-item" onclick="toggleCheck(this)">
+        <div class="cl-checkbox"></div>
+        <div>${w.attName}：没约到？${w.releaseTime}后持续刷新捡漏回流票30分钟</div>
+      </div>`;
+    });
+
+    items += `<div class="cl-item" onclick="toggleCheck(this)">
+      <div class="cl-checkbox"></div>
+      <div>全部搞定后截图保存预约确认信息</div>
+    </div>`;
+
+    cl.innerHTML = `<div class="cl-title">📅 ${label} · 操作清单</div>${items}`;
+    container.appendChild(cl);
+  });
+}
+
+function renderChildGuide() {
+  const p = planData;
+  const trip = p.trip;
+  const container = document.getElementById('child-guide-container');
+
+  if (trip.children === 0) {
+    container.innerHTML = '<div class="child-guide"><div class="cg-title">本次行程无儿童</div><div class="cg-note">如需添加儿童信息，请返回重新规划</div></div>';
+    return;
+  }
+
+  const ages = trip.childAges || '';
+  const childItems = p.atts.map(att => {
+    return `<div class="cg-item"><div class="museum">${att.name}</div><div>${att.childPolicy}</div></div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="child-guide">
+      <div class="cg-title">👶 ${ages} 儿童票务指南</div>
+      ${childItems}
+      <div class="cg-note">💡 建议：所有参观人身份信息提前复制到手机备忘录，到点直接粘贴。所有场馆入馆需刷身份证原件（儿童如有身份证也需携带）。</div>
+    </div>
+  `;
+}
+
+function renderNotes() {
+  const p = planData;
+  const container = document.getElementById('notes-container');
+
+  const generalNotes = [
+    '所有场馆入馆需携带<b>身份证原件</b>，照片/电子身份证不行',
+    '预约记录一定<b>截图保存</b>，以防现场信号差',
+    '故宫明确声明<b>未授权任何第三方</b>，找黄牛有信息泄露和被骗风险',
+    '<b>看到票别犹豫</b>——犹豫几秒就可能被约满',
+    '多设备并行预约：手机+平板同时上线，不同账号分头预约',
+    '网络切换到4G/5G，避免WiFi多人同IP被风控',
+    '身份信息提前复制到备忘录，到点直接粘贴',
+    '景点放票规则可能随时调整，以官方渠道最新公告为准',
+  ];
+
+  // 添加闭馆日提醒
+  const closedNotes = [];
+  p.atts.filter(a => a.closedDays.length > 0).forEach(att => {
+    const days = att.closedDays.map(d => '周'+'日一二三四五六'[d]).join('、');
+    closedNotes.push(`${att.name}：${days}闭馆，避开这些天`);
+  });
+
+  container.innerHTML = (closedNotes.concat(generalNotes)).map(n =>
+    `<div class="item"><span class="dot">•</span><div>${n}</div></div>`
+  ).join('');
+}
+
+function renderSchedule() {
+  const p = planData;
+  const container = document.getElementById('schedule-container');
+
+  const html = p.schedule.map(day => {
+    const isClosed = day.available.length === 0;
+    if (isClosed) {
+      return `<div class="item"><span class="dot" style="color:var(--text3)">▶</span><div><b>${fmtDate(day.date)} 周${weekdayCN(day.date)}</b> → 所有选中景点闭馆，安排其他活动（长城/天坛外围/胡同/王府井等）</div></div>`;
+    }
+    const attNames = day.available.map(a => a.icon+' '+a.name).join(' / ');
+    const closedNames = day.closed.length > 0 ? `（${day.closed.map(a=>a.name).join('、')}闭馆）` : '';
+    return `<div class="item"><span class="dot" style="color:var(--green)">▶</span><div><b>${fmtDate(day.date)} 周${weekdayCN(day.date)}</b> → 可去：${attNames} ${closedNames}</div></div>`;
+  }).join('');
+
+  container.innerHTML = html;
+}
+
+// ==================== 倒计时 ====================
+function updateCountdown() {
+  if (!planData) return;
+  const now = getBeijingNow();
+  let next = null;
+  for (const w of planData.bookingWindows) {
+    if (w.ts > now && w.priority !== 'missed') { next = w; break; }
+  }
+
+  const banner = document.getElementById('urgentBanner');
+
+  if (!next) {
+    document.getElementById('cdTarget').textContent = '🎉 所有放票窗口已结束';
+    ['cdD','cdH','cdM','cdS'].forEach(id => document.getElementById(id).textContent = '00');
+    banner.style.display = 'none';
+    return;
+  }
+
+  const diff = next.ts - now;
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+
+  document.getElementById('cdD').textContent = pad(d);
+  document.getElementById('cdH').textContent = pad(h);
+  document.getElementById('cdM').textContent = pad(m);
+  document.getElementById('cdS').textContent = pad(s);
+
+  const dateStr = next.ts.toLocaleDateString('zh-CN', { month:'numeric', day:'numeric', weekday:'short' });
+  document.getElementById('cdTarget').textContent = `📅 ${next.attIcon} ${next.attName} · ${fmtDate(next.visitDate)} · ${next.releaseTime} 放票`;
+
+  if (diff < 600000) {
+    banner.style.display = 'flex';
+    document.getElementById('urgentTitle').textContent = `⚠️ 即将开始！${next.attName} ${next.releaseTime} 放票`;
+    document.getElementById('urgentDesc').textContent = `${next.releaseTime} 准时操作！进入${next.attName}预约渠道，到点立刻提交！`;
+  } else if (diff < 3600000) {
+    banner.style.display = 'flex';
+    document.getElementById('urgentTitle').textContent = `⏰ 1小时内：${next.attName} 放票`;
+    document.getElementById('urgentDesc').textContent = '提前进入小程序，确认信息已填好，切换到5G/移动数据';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+// ==================== 捡漏监控系统 ====================
+let svMode = null;
+let lastAlertCheckpoint = null;
+let audioCtx = null;
+
+function initAudio() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  }
+}
+function playBeep(freq=880, duration=0.15, type='sine') {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(); osc.stop(audioCtx.currentTime + duration);
+}
+function playAlert(type='normal') {
+  initAudio();
+  if (type === 'peak') {
+    setTimeout(() => playBeep(1200, 0.1, 'square'), 0);
+    setTimeout(() => playBeep(1400, 0.1, 'square'), 150);
+    setTimeout(() => playBeep(1600, 0.15, 'square'), 300);
+  } else {
+    setTimeout(() => playBeep(880, 0.12, 'sine'), 0);
+    setTimeout(() => playBeep(1100, 0.15, 'sine'), 200);
+  }
+}
+
+function renderScavengePanel() {
+  const p = planData;
+  // 找出有捡漏配置的景点
+  const svAtts = p.atts.filter(a => a.scavengeConfig);
+  const panel = document.getElementById('scavengePanel');
+
+  if (svAtts.length === 0) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  panel.style.display = 'block';
+
+  // 渲染Tabs
+  const tabs = document.getElementById('svTabs');
+  svMode = svAtts[0].id;
+  tabs.innerHTML = svAtts.map((a, i) =>
+    `<div class="sv-tab ${i===0?'active':''}" onclick="switchSvMode('${a.id}', this)">${a.icon} ${a.name}</div>`
+  ).join('');
+
+  renderScavengeCheckpoints();
+}
+
+function switchSvMode(mode, tabEl) {
+  svMode = mode;
+  document.querySelectorAll('.sv-tab').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+  lastAlertCheckpoint = null;
+  renderScavengeCheckpoints();
+  updateScavengePanel();
+}
+
+function renderScavengeCheckpoints() {
+  const att = ATTRACTIONS[svMode];
+  if (!att || !att.scavengeConfig) return;
+  const config = att.scavengeConfig;
+  const rt = att.releaseTimes[0];
+  const waveEl = document.getElementById('svWave');
+  const checklistEl = document.getElementById('svChecklist');
+
+  waveEl.innerHTML = config.checkpoints.map(cp => {
+    const totalMin = rt.hour * 60 + rt.minute + cp.offset;
+    const h = Math.floor(totalMin / 60) % 24;
+    const m = totalMin % 60;
+    const peakClass = cp.peak ? 'peak' : '';
+    return `<div class="sv-wave-bar ${peakClass}" style="height:${cp.height}"><span>${pad(h)}:${pad(m)}</span></div>`;
+  }).join('');
+
+  checklistEl.innerHTML = config.checkpoints.map(cp => {
+    const totalMin = rt.hour * 60 + rt.minute + cp.offset;
+    const h = Math.floor(totalMin / 60) % 24;
+    const m = totalMin % 60;
+    const peakClass = cp.peak ? 'peak-item' : '';
+    return `<div class="sv-cl-item ${peakClass}" id="svcl-${cp.offset}">
+      <div class="sv-cl-dot"></div>
+      <div class="sv-cl-time">${pad(h)}:${pad(m)}</div>
+      <div class="sv-cl-desc">${cp.label}</div>
+      <div class="sv-cl-badge">待</div>
+    </div>`;
+  }).join('');
+}
+
+function updateScavengePanel() {
+  if (!svMode || !planData) return;
+  const att = ATTRACTIONS[svMode];
+  if (!att || !att.scavengeConfig) return;
+
+  const config = att.scavengeConfig;
+  const rt = att.releaseTimes[0];
+  const now = getBeijingNow();
+  const releaseMinutes = rt.hour * 60 + rt.minute;
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+  // 找今天是否有该景点的放票
+  const todayKey = dateKey(now);
+  const hasToday = planData.bookingWindows.some(w =>
+    w.attId === svMode && dateKey(w.ts) === todayKey && w.priority !== 'missed'
+  );
+
+  const panel = document.getElementById('scavengePanel');
+  const status = document.getElementById('svStatus');
+  const alertEl = document.getElementById('svAlert');
+  const alertText = document.getElementById('svAlertText');
+  const svBody = document.getElementById('svBody');
+
+  if (!hasToday) {
+    status.textContent = `今天没有${att.name}放票`;
+    panel.classList.remove('active','urgent');
+    alertEl.classList.remove('active','urgent');
+    alertText.textContent = `今天没有${att.name}放票`;
+    return;
+  }
+
+  if (nowMinutes < releaseMinutes) {
+    status.textContent = `等待 ${pad(rt.hour)}:${pad(rt.minute)} 放票...`;
+    panel.classList.remove('active','urgent');
+    alertEl.classList.remove('active','urgent');
+    alertText.textContent = `尚未进入捡漏窗口，${pad(rt.hour)}:${pad(rt.minute)}放票结束后自动激活`;
+  } else if (nowMinutes < releaseMinutes + 5) {
+    status.textContent = `🟡 ${att.name}正在放票，准备进入捡漏...`;
+    panel.classList.add('active'); panel.classList.remove('urgent');
+    alertEl.classList.add('active'); alertEl.classList.remove('urgent');
+    alertText.textContent = `${att.name}放票进行中！第一轮没约到的话马上进入捡漏模式...`;
+  } else if (nowMinutes > releaseMinutes + 31) {
+    status.textContent = `${att.name}今日捡漏已结束`;
+    panel.classList.remove('active','urgent');
+    alertEl.classList.remove('active','urgent');
+    alertText.textContent = '捡漏窗口已关闭，下次放票继续！';
+  } else {
+    // 找当前checkpoint
+    let currentCp = null;
+    for (const cp of config.checkpoints) {
+      if (nowMinutes >= releaseMinutes + cp.offset) currentCp = cp;
+    }
+    if (currentCp) {
+      const cpTotalMin = releaseMinutes + currentCp.offset;
+      const cpH = Math.floor(cpTotalMin / 60) % 24;
+      const cpM = cpTotalMin % 60;
+      const cpLabel = currentCp.peak ? '🔴 主回流波！' : '🟠 捡漏进行中';
+      status.textContent = cpLabel + ' ' + pad(cpH)+':'+pad(cpM) + ' · ' + currentCp.label;
+      panel.classList.add('active');
+      if (currentCp.peak) panel.classList.add('urgent'); else panel.classList.remove('urgent');
+      alertEl.classList.add('active');
+      if (currentCp.peak) alertEl.classList.add('urgent'); else alertEl.classList.remove('urgent');
+      alertText.textContent = '⚠️ ' + pad(cpH)+':'+pad(cpM) + ' — ' + currentCp.desc;
+
+      if (!svBody.classList.contains('open')) {
+        svBody.classList.add('open');
+        document.querySelector('.sv-arrow').classList.add('open');
+      }
+
+      const cpKey = svMode + '-' + currentCp.offset;
+      if (lastAlertCheckpoint !== cpKey) {
+        lastAlertCheckpoint = cpKey;
+        playAlert(currentCp.peak ? 'peak' : 'normal');
+      }
+    }
+  }
+
+  updateScavengeItems(att, nowMinutes, releaseMinutes);
+}
+
+function updateScavengeItems(att, nowMinutes, releaseMinutes) {
+  const config = att.scavengeConfig;
+  config.checkpoints.forEach((cp, i) => {
+    const item = document.getElementById('svcl-' + cp.offset);
+    const waveBar = document.querySelectorAll('.sv-wave-bar')[i];
+    if (!item) return;
+
+    const cpAbsMinutes = releaseMinutes + cp.offset;
+    item.classList.remove('passed','current','peak-item');
+    if (waveBar) waveBar.classList.remove('flash');
+
+    if (nowMinutes >= cpAbsMinutes + 1) {
+      item.classList.add('passed');
+      const badge = item.querySelector('.sv-cl-badge');
+      if (badge) badge.textContent = '✓';
+    } else if (nowMinutes >= cpAbsMinutes) {
+      item.classList.add('current');
+      if (cp.peak) item.classList.add('peak-item');
+      const badge = item.querySelector('.sv-cl-badge');
+      if (badge) badge.textContent = '执行';
+      if (waveBar) { waveBar.classList.add('flash'); if (cp.peak) waveBar.classList.add('peak'); }
+    }
+  });
+}
+
+function toggleScavenge(header) {
+  initAudio();
+  const body = document.getElementById('svBody');
+  const arrow = header.querySelector('.sv-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+// ==================== 卡片展开/折叠 ====================
+function toggleCard(header) {
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('.sc-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+// ==================== Checklist ====================
+function toggleCheck(item) {
+  const cb = item.querySelector('.cl-checkbox');
+  cb.classList.toggle('checked');
+  item.classList.toggle('checked');
+  // 保存状态
+  const allItems = document.querySelectorAll('#checklist-container .cl-item');
+  const states = [];
+  allItems.forEach(it => states.push(it.classList.contains('checked')));
+  try { localStorage.setItem('plan_checklist', JSON.stringify(states)); } catch(e) {}
+}
+
+function restoreChecklist() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('plan_checklist'));
+    if (!saved) return;
+    const allItems = document.querySelectorAll('#checklist-container .cl-item');
+    allItems.forEach((it, i) => {
+      if (saved[i]) { it.querySelector('.cl-checkbox').classList.add('checked'); it.classList.add('checked'); }
+    });
+  } catch(e) {}
+}
+
+// ==================== 主流程 ====================
+function generateAndShowPlan() {
+  // 收集向导数据
+  userTrip = {
+    arrivalDate: wizardData.arrivalDate || document.getElementById('inp-arrival').value,
+    days: wizardData.days,
+    adults: wizardData.adults,
+    children: wizardData.children,
+    childAges: wizardData.children > 0 ? (document.getElementById('inp-childAges').value || wizardData.childAges) : '',
+    selectedAttractions: Array.from(selectedAttractions),
+    createdAt: new Date().toISOString(),
+  };
+
+  // 保存到localStorage
+  try { localStorage.setItem('userTrip', JSON.stringify(userTrip)); } catch(e) {}
+
+  // 生成方案
+  planData = generatePlan(userTrip);
+
+  // 切换视图
+  document.getElementById('view-wizard').style.display = 'none';
+  document.getElementById('view-plan').style.display = 'block';
+
+  // 清空时间线容器（避免重复）
+  document.getElementById('timeline').innerHTML = '';
+
+  // 渲染
+  renderPlan();
+  restoreChecklist();
+
+  window.scrollTo(0, 0);
+}
+
+function resetPlan() {
+  // 直接重置，不再弹 confirm（在部分预览/嵌入环境中 confirm 会被拦截导致无反应）
+  try { localStorage.removeItem('userTrip'); localStorage.removeItem('plan_checklist'); } catch(e) {}
+  userTrip = null;
+  planData = null;
+  selectedAttractions.clear();
+  document.getElementById('view-plan').style.display = 'none';
+  document.getElementById('view-wizard').style.display = 'block';
+  // 重置向导
+  wizardData = { arrivalDate: '', days: 5, adults: 2, children: 1, childAges: '8岁' };
+  wizardStep = 1;
+  // 清空表单
+  document.getElementById('inp-arrival').value = '';
+  document.getElementById('inp-days').textContent = 5;
+  document.getElementById('inp-adults').textContent = 2;
+  document.getElementById('inp-children').textContent = 1;
+  document.getElementById('inp-childAges').value = '8岁';
+  // 清除选中状态
+  document.querySelectorAll('.att-card').forEach(el => el.classList.remove('selected'));
+  goStep(1);
+  window.scrollTo(0, 0);
+}
+
+function loadSavedTrip() {
+  try {
+    const saved = localStorage.getItem('userTrip');
+    if (!saved) return false;
+    userTrip = JSON.parse(saved);
+    if (!userTrip.selectedAttractions || userTrip.selectedAttractions.length === 0) return false;
+    planData = generatePlan(userTrip);
+    document.getElementById('view-wizard').style.display = 'none';
+    document.getElementById('view-plan').style.display = 'block';
+    renderPlan();
+    restoreChecklist();
+    return true;
+  } catch(e) { return false; }
+}
+
+// ==================== 主循环 ====================
+function startMainLoop() {
+  updateCountdown();
+  if (svMode) updateScavengePanel();
+  setInterval(() => {
+    updateCountdown();
+    if (svMode) updateScavengePanel();
+  }, 1000);
+}
+
+// ==================== 初始化 ====================
+initWizard();
+
+if (!loadSavedTrip()) {
+  // 没有已保存的行程，显示向导
+  startMainLoop();
+} else {
+  startMainLoop();
+}
+
+// 页面首次点击时初始化音频
+document.addEventListener('click', initAudio, { once: true });
+</script>
+</body>
+</html>
