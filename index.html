@@ -804,8 +804,9 @@
     .then(r => r.json())
     .then(data => {
       const el = document.getElementById('real-counter-num');
-      if (el && typeof data.count === 'number') {
-        el.textContent = data.count.toLocaleString();
+      const count = data.count === undefined ? NaN : Number(data.count);
+      if (el && !isNaN(count)) {
+        el.textContent = count.toLocaleString();
       }
     })
     .catch(() => {
