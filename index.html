@@ -799,7 +799,7 @@
 // 从 GoatCounter 读取真实访客数
 (function fetchRealCounter() {
   // path 通常为 '/'（site 根路径）或 '/BookingAssistant/'，以 GoatCounter dashboard 中 counter 链接为准
-  const endpoint = 'https://daka-booking.goatcounter.com/counter/%2FBookingAssistant%2F.json';
+  const endpoint = 'https://daka-booking.goatcounter.com/counter//BookingAssistant/.json';
   fetch(endpoint)
     .then(r => r.json())
     .then(data => {
