@@ -7,6 +7,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="format-detection" content="telephone=no">
+<meta property="og:title" content="北京亲子游安心预约助手">
+<meta property="og:description" content="暑期带娃游北京，12个热门景点放票时间、预约策略、捡漏监控，一页全搞定。打开即用，无需注册。">
+<meta property="og:image" content="https://daka-agent.github.io/BookingAssistant/preview.png">
+<meta property="og:url" content="https://daka-agent.github.io/BookingAssistant/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="manifest.json">
 <title>北京亲子游安心预约助手</title>
 <script data-goatcounter="https://daka-booking.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
@@ -197,6 +204,28 @@
     transition:all .2s; white-space:nowrap;
   }
   .plan-back:active{background:var(--bg2);}
+  .plan-share{
+    margin-left:auto;
+    font-size:.78rem; color:var(--bg); cursor:pointer;
+    padding:.4rem .7rem; border-radius:8px;
+    border:1px solid var(--cyan); background:var(--cyan);
+    transition:all .2s; white-space:nowrap;
+    font-weight:600;
+  }
+  .plan-share:active{opacity:.85;}
+
+  /* 轻提示 Toast */
+  .toast{
+    position:fixed; bottom:max(1rem, env(safe-area-inset-bottom)); left:50%;
+    transform:translateX(-50%);
+    background:var(--card); color:var(--text);
+    border:1px solid var(--border); border-radius:8px;
+    padding:.6rem 1rem; font-size:.8rem;
+    box-shadow:0 4px 20px rgba(0,0,0,.4);
+    z-index:1000; opacity:0; pointer-events:none;
+    transition:opacity .3s;
+  }
+  .toast.show{opacity:1;}
 
   .header .tags{display:flex; gap:.5rem; justify-content:center; margin-top:.6rem; flex-wrap:wrap;}
   .tag{
@@ -271,6 +300,20 @@
   .cd-num{font-size:2.2rem; font-weight:900; color:var(--cyan); text-shadow:0 0 20px rgba(0,240,255,0.3); min-width:2.5rem; display:inline-block;}
   .cd-label{font-size:.6rem; color:var(--text3); text-transform:uppercase; margin-top:.2rem;}
   .cd-sep{font-size:1.5rem; color:var(--text3); font-weight:300;}
+
+  /* 通知提醒 */
+  .notification-bar{
+    display:flex; align-items:center; justify-content:space-between; gap:.5rem;
+    background:rgba(0,240,255,0.06); border:1px solid rgba(0,240,255,0.2);
+    border-radius:12px; padding:.6rem .8rem; margin:.6rem 0;
+    font-size:.75rem; color:var(--text2);
+  }
+  .notification-btn{
+    background:var(--cyan); color:var(--bg); border:none;
+    border-radius:8px; padding:.35rem .7rem; font-size:.7rem;
+    cursor:pointer; font-weight:600; white-space:nowrap;
+  }
+  .notification-btn:active{opacity:.85;}
 
   /* 实战经验 */
   .lessons{
@@ -700,6 +743,7 @@
   <div id="view-plan">
     <div class="plan-header">
       <div class="plan-back" onclick="resetPlan()">← 重新规划</div>
+      <div class="plan-share" onclick="sharePlan()">分享家人</div>
     </div>
 
     <div class="header">
@@ -728,6 +772,11 @@
         <span class="cd-sep">:</span>
         <div class="cd-unit"><span class="cd-num" id="cdS">00</span><div class="cd-label">秒</div></div>
       </div>
+    </div>
+
+    <div class="notification-bar" id="notification-bar" style="display:none;">
+      <span id="notification-text"></span>
+      <button class="notification-btn" id="notification-btn" onclick="requestNotificationPermission()" style="display:none;">开启提醒</button>
     </div>
 
     <div id="conflict-section"></div>
@@ -1396,6 +1445,9 @@ function renderPlan() {
   // 倒计时 & 紧急横幅在 updateCountdown 中处理
   updateCountdown();
 
+  // 通知提醒状态
+  updateNotificationBar();
+
   // 冲突警告
   const cs = document.getElementById('conflict-section');
   if (p.conflicts.length > 0) {
@@ -2035,8 +2087,23 @@ function generateAndShowPlan() {
   // 保存到localStorage
   try { localStorage.setItem('userTrip', JSON.stringify(userTrip)); } catch(e) {}
 
+  // 同步更新 URL，方便直接复制分享给家人
+  const shareUrl = encodeTripToUrl(userTrip);
+  if (shareUrl) history.replaceState(null, '', shareUrl);
+
   // 生成方案
   planData = generatePlan(userTrip);
+
+  // 请求通知权限并调度提醒（仅在用户主动生成方案时触发）
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission().then(permission => {
+      if (permission === 'granted') scheduleNotifications(planData);
+      updateNotificationBar();
+    });
+  } else {
+    scheduleNotifications(planData);
+    updateNotificationBar();
+  }
 
   // 切换视图
   document.getElementById('view-wizard').style.display = 'none';
@@ -2086,8 +2153,171 @@ function loadSavedTrip() {
     document.getElementById('view-plan').style.display = 'block';
     renderPlan();
     restoreChecklist();
+    scheduleNotifications(planData);
+    updateNotificationBar();
     return true;
   } catch(e) { return false; }
+}
+
+// 轻提示
+let toastTimer = null;
+function showToast(msg) {
+  let el = document.getElementById('app-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'app-toast';
+    el.className = 'toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// 将行程编码到 URL，方便分享给家人
+function encodeTripToUrl(trip) {
+  try {
+    const json = JSON.stringify(trip);
+    const encoded = btoa(encodeURIComponent(json));
+    const base = location.origin + location.pathname;
+    return base + '?trip=' + encoded;
+  } catch(e) { return null; }
+}
+
+function decodeTripFromUrl() {
+  try {
+    const params = new URLSearchParams(location.search);
+    const tripParam = params.get('trip');
+    if (!tripParam) return null;
+    return JSON.parse(decodeURIComponent(atob(tripParam)));
+  } catch(e) { return null; }
+}
+
+function loadFromUrl() {
+  const trip = decodeTripFromUrl();
+  if (!trip || !trip.selectedAttractions || trip.selectedAttractions.length === 0) return false;
+  userTrip = trip;
+  planData = generatePlan(userTrip);
+  document.getElementById('view-wizard').style.display = 'none';
+  document.getElementById('view-plan').style.display = 'block';
+  renderPlan();
+  restoreChecklist();
+  scheduleNotifications(planData);
+  updateNotificationBar();
+  // 保存到 localStorage，后续刷新不用依赖 URL
+  try { localStorage.setItem('userTrip', JSON.stringify(userTrip)); } catch(e) {}
+  return true;
+}
+
+function sharePlan() {
+  if (!userTrip) return;
+  const shareUrl = encodeTripToUrl(userTrip);
+  if (!shareUrl) return;
+
+  // 优先使用系统分享
+  if (navigator.share) {
+    navigator.share({ title: '我的北京预约方案', url: shareUrl }).catch(() => {
+      copyShareUrl(shareUrl);
+    });
+  } else {
+    copyShareUrl(shareUrl);
+  }
+}
+
+function copyShareUrl(url) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => showToast('链接已复制，发给家人即可'));
+  } else {
+    prompt('复制这个链接发给家人：', url);
+  }
+}
+
+// ==================== 放票提醒通知 ====================
+let scheduledNotificationTimers = [];
+
+function updateNotificationBar() {
+  const bar = document.getElementById('notification-bar');
+  const text = document.getElementById('notification-text');
+  const btn = document.getElementById('notification-btn');
+  if (!bar || !text) return;
+
+  if (!('Notification' in window)) {
+    bar.style.display = 'none';
+    return;
+  }
+
+  bar.style.display = 'flex';
+  if (Notification.permission === 'granted') {
+    text.textContent = '🔔 放票提醒已开启，到点前会通知你';
+    btn.style.display = 'none';
+  } else if (Notification.permission === 'denied') {
+    text.textContent = '通知权限已被拒绝，可在浏览器设置中手动开启';
+    btn.style.display = 'none';
+  } else {
+    text.textContent = '开启放票提醒，到点前通知你操作';
+    btn.style.display = 'inline-block';
+    btn.textContent = '开启提醒';
+  }
+}
+
+function requestNotificationPermission() {
+  if (!('Notification' in window)) {
+    showToast('当前浏览器不支持通知提醒');
+    return;
+  }
+  Notification.requestPermission().then(permission => {
+    updateNotificationBar();
+    if (permission === 'granted' && planData) {
+      scheduleNotifications(planData);
+      showToast('放票提醒已开启');
+    } else if (permission === 'denied') {
+      showToast('通知权限被拒绝');
+    }
+  });
+}
+
+function scheduleNotifications(plan) {
+  // 清除旧定时器
+  scheduledNotificationTimers.forEach(id => clearTimeout(id));
+  scheduledNotificationTimers = [];
+
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  if (!navigator.serviceWorker) return;
+
+  const now = getBeijingNow();
+  plan.bookingWindows.forEach(w => {
+    const diff = w.ts - now;
+    // 只调度未来 24 小时内的窗口
+    if (diff <= 0 || diff > 86400000) return;
+
+    // 放票前 10 分钟
+    const t10 = diff - 600000;
+    if (t10 > 0) {
+      scheduledNotificationTimers.push(setTimeout(() => {
+        sendNotification(w, '10分钟后放票', `⏰ ${w.attName} 将在 ${w.releaseTime} 放票，请提前进入小程序`);
+      }, t10));
+    }
+
+    // 放票前 1 分钟
+    const t1 = diff - 60000;
+    if (t1 > 0) {
+      scheduledNotificationTimers.push(setTimeout(() => {
+        sendNotification(w, '即将放票！', `🚨 ${w.attName} ${w.releaseTime} 即将放票！立刻提交！`);
+      }, t1));
+    }
+  });
+}
+
+function sendNotification(w, title, body) {
+  navigator.serviceWorker.ready.then(reg => {
+    reg.showNotification(title, {
+      body: body,
+      icon: 'icon-192.png',
+      tag: w.attId + '_' + w.ts.getTime(),
+      requireInteraction: true,
+    });
+  }).catch(() => {});
 }
 
 // ==================== 主循环 ====================
@@ -2103,7 +2333,8 @@ function startMainLoop() {
 // ==================== 初始化 ====================
 initWizard();
 
-if (!loadSavedTrip()) {
+// 加载优先级：URL 分享参数 > 本地保存的行程 > 显示向导
+if (!loadFromUrl() && !loadSavedTrip()) {
   // 没有已保存的行程，显示向导
   startMainLoop();
 } else {
@@ -2112,6 +2343,11 @@ if (!loadSavedTrip()) {
 
 // 页面首次点击时初始化音频
 document.addEventListener('click', initAudio, { once: true });
+
+// 注册 Service Worker，支持 PWA 离线访问和后台通知
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>
