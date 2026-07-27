@@ -1,0 +1,17 @@
+{
+  "name": "北京亲子游安心预约助手",
+  "short_name": "安心预约",
+  "description": "暑期带娃游北京，景点放票时间、预约策略、捡漏监控，一页全搞定。",
+  "start_url": "/BookingAssistant/",
+  "display": "standalone",
+  "background_color": "#0a0e1a",
+  "theme_color": "#0a0e1a",
+  "orientation": "portrait",
+  "scope": "/BookingAssistant/",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "categories": ["travel", "utilities"],
+  "lang": "zh-CN"
+}
