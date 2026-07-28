@@ -2666,7 +2666,7 @@ function renderNotes() {
       closedNotes.push(`⚠️ ${att.name}：${att.tempClose.from}至${att.tempClose.to}临时闭馆（${att.tempClose.reason}）`);
     }
     const days = att.closedDays.map(d => '周'+'日一二三四五六'[d]).join('、');
-    let note = `${att.name}：${days}闭馆，避开这些天`;
+    let note = `${att.name}：${days}闭馆，请避开`;
     if (att.seasonalClosedDays) {
       const sDays = att.seasonalClosedDays.closedDays.map(d => '周'+'日一二三四五六'[d]).join('、');
       note += `；但${att.seasonalClosedDays.from}至${att.seasonalClosedDays.to}期间改为${sDays}闭馆`;
