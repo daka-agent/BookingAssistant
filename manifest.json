@@ -1,7 +1,7 @@
 {
-  "name": "北京亲子游安心预约助手",
-  "short_name": "安心预约",
-  "description": "暑期带娃游北京，景点放票时间、预约策略、捡漏监控，一页全搞定。",
+  "name": "北京景点预约助手",
+  "short_name": "景点预约",
+  "description": "北京热门景点放票时间、预约策略、捡漏监控，一页全搞定。打开即用，无需注册。",
   "start_url": "/BookingAssistant/",
   "display": "standalone",
   "background_color": "#0a0e1a",
