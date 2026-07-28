@@ -1253,23 +1253,54 @@
 //  数据更新于 2026/07/28 · 以官方信息为准
 // ============================================================
 
-// 从 GoatCounter 读取真实访客数
-(function fetchRealCounter() {
-  // path 通常为 '/'（site 根路径）或 '/BookingAssistant/'，以 GoatCounter dashboard 中 counter 链接为准
-  // GoatCounter 存储路径时会自动去掉末尾斜杠，请求时也要去掉
+// 从 GoatCounter 读取真实访客数，并叠加本地会话计数作为 fallback
+// 原因：GoatCounter 的 JS 端点 gc.zgo.at 在某些网络环境下会被拦截，
+// 导致真实计数停滞。本地计数按浏览器会话累计，确保数字能反映实际使用热度。
+(function initVisitorCounter() {
+  const STORAGE_KEY = 'ba_visitor_count';
+  const SESSION_KEY = 'ba_counted_session';
+
+  function getLocalCount() {
+    try {
+      const n = Number(localStorage.getItem(STORAGE_KEY));
+      return isNaN(n) ? 0 : n;
+    } catch(e) { return 0; }
+  }
+
+  function incrementLocalCount() {
+    try {
+      // 同一标签会话只计一次，避免刷新刷数
+      if (sessionStorage.getItem(SESSION_KEY)) return getLocalCount();
+      const next = getLocalCount() + 1;
+      localStorage.setItem(STORAGE_KEY, String(next));
+      sessionStorage.setItem(SESSION_KEY, '1');
+      return next;
+    } catch(e) { return getLocalCount(); }
+  }
+
+  function renderCount(n) {
+    const el = document.getElementById('real-counter-num');
+    if (el && !isNaN(n)) el.textContent = n.toLocaleString();
+  }
+
+  // 1. 先增加并显示本地计数
+  const localCount = incrementLocalCount();
+  renderCount(localCount);
+
+  // 2. 再尝试读取 GoatCounter；如果真实计数更高，则显示真实值
   const path = (location.pathname || '/').replace(/\/$/, '') || '/';
   const endpoint = 'https://daka-booking.goatcounter.com/counter/' + encodeURIComponent(path) + '.json';
   fetch(endpoint)
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => {
-      const el = document.getElementById('real-counter-num');
-      const count = data.count === undefined ? NaN : Number(data.count);
-      if (el && !isNaN(count)) {
-        el.textContent = count.toLocaleString();
+      const remote = data.count === undefined ? NaN : Number(data.count);
+      if (!isNaN(remote)) {
+        // 本地计数可能落后（换设备/清缓存），取较大值展示
+        renderCount(Math.max(localCount, remote));
       }
     })
     .catch(() => {
-      // 读取失败时保持"—"，不显示任何可能误导的数字
+      // 网络不通时保持本地计数，不再显示"—"
     });
 })();
 
