@@ -779,6 +779,8 @@
       <button class="notification-btn" id="notification-btn" onclick="requestNotificationPermission()" style="display:none;">开启提醒</button>
     </div>
 
+    <div id="data-freshness-warning" style="display:none;"></div>
+
     <div id="conflict-section"></div>
 
     <div class="lessons" id="lessons-box"></div>
@@ -842,7 +844,7 @@
 <script>
 // ============================================================
 //  北京亲子游安心预约助手
-//  数据更新于 2026/07/24 · 以官方信息为准
+//  数据更新于 2026/07/28 · 以官方信息为准
 // ============================================================
 
 // 从 GoatCounter 读取真实访客数
@@ -878,7 +880,7 @@ const ATTRACTIONS = {
     timeSlots:['上午场(8:30-12:00)','下午场(11:00后入馆)'],
     difficulty:'hard',
     entrance:'午门（南门）唯一入口 · 单向游览',
-    penalty:'180天内3次爽约 → 60天不能预约',
+    penalty:'半年内（6个月）累计3次爽约 → 60天不能预约',
     notes:'故宫明确声明未授权任何第三方，找黄牛有风险',
     strategy:[
       '19:58 进入购票页面，选好日期+上午场，预填所有信息',
@@ -908,11 +910,11 @@ const ATTRACTIONS = {
     price:'免费',
     childPolicy:'1.3米以下免预约（需成人陪同入馆）；14岁以下需成人代约',
     closedDays:[1],
-    timeSlots:['9:00-11:00','11:00-13:30','13:30-16:30'],
+    timeSlots:['9:00-11:00','11:00-13:30','13:30-16:00（暑期至16:30）'],
     difficulty:'hard',
     entrance:'北门入馆 · 天安门附近安检耗时长，至少提前1小时到',
-    penalty:'累计3次未履约 → 账号冻结30天',
-    notes:'每账号每日最多约5人，14岁以下儿童≤3人',
+    penalty:'1年内累计3次未履约 → 限制预约30天',
+    notes:'每账号每次最多约5人(14岁以下≤3人)；每自然周限约1次（退票也计入）；至多添加10个常用联系人，30日内不可变更',
     strategy:[
       '16:55 前登录，提前存好所有参观人信息',
       '优先选下午场(13:30-16:30)，早场秒没，下午场成功率更高',
@@ -934,7 +936,7 @@ const ATTRACTIONS = {
   junbo: {
     id:'junbo', name:'军事博物馆', icon:'🎖️',
     channel:'微信公众号「中国人民革命军事博物馆」',
-    bookingDays:7,
+    bookingDays:8,
     releaseTimes:[{hour:8,minute:0},{hour:17,minute:0},{hour:20,minute:0}],
     price:'免费',
     childPolicy:'6周岁以下可由已预约大人携带现场入馆；7-14岁需成人代约',
@@ -966,7 +968,7 @@ const ATTRACTIONS = {
     id:'tiantan', name:'天坛公园', icon:'🌳',
     channel:'微信公众号「天坛」/ 畅游公园',
     bookingDays:7,
-    releaseTimes:[{hour:0,minute:0}],
+    releaseTimes:[{hour:21,minute:0}],
     price:'联票34元/门票15元 · 6岁以下免费、7-18岁半价',
     childPolicy:'6岁以下免费；7-18岁半价；需预约免费票',
     closedDays:[1],
@@ -988,7 +990,7 @@ const ATTRACTIONS = {
     id:'yiheyuan', name:'颐和园', icon:'🏞️',
     channel:'微信公众号「颐和园」/ 畅游公园',
     bookingDays:7,
-    releaseTimes:[{hour:0,minute:0}],
+    releaseTimes:[{hour:21,minute:0}],
     price:'门票30元/联票60元 · 6岁以下免费、7-18岁半价',
     childPolicy:'6岁以下免费；7-18岁半价；需预约免费票',
     closedDays:[],
@@ -1019,7 +1021,9 @@ const ATTRACTIONS = {
     entrance:'北门入口',
     penalty:'爽约限制预约',
     notes:'严禁带包、手机、相机、饮水等入内，需提前寄存；着装需端庄',
+    tempClose:{ from:'2026-03-16', to:'2026-08-31', reason:'内部维修改造施工，暂停对外开放' },
     strategy:[
+      '⚠️ 2026年3月16日至8月31日维修闭馆，暂停预约',
       '提前1-6天在小程序预约',
       '严禁携带包、手机、相机、饮水等，需在天安门广场东侧寄存',
       '着装端庄，不可穿拖鞋背心',
@@ -1036,15 +1040,16 @@ const ATTRACTIONS = {
     price:'免费',
     childPolicy:'所有观众均需预约（含儿童）；1.2米以下儿童可由成人携入',
     closedDays:[1],
-    timeSlots:['9:00-17:00（16:00停止入馆）'],
+    seasonalClosedDays:{ from:'2026-07-06', to:'2026-08-31', closedDays:[2] },
+    timeSlots:['9:00-11:00','11:00-14:00','14:00-16:00（16:30停止入馆）'],
     difficulty:'medium',
     entrance:'北京市东城区天桥南大街126号',
-    penalty:'累计3次爽约 → 60天不能预约',
-    notes:'暑期非常热门，建议提前3天准时预约',
+    penalty:'当月累计3次爽约 → 90天不能预约',
+    notes:'暑期非常热门；7/6-8/31闭馆日改为周二',
     strategy:[
       '提前3天11:00准时预约',
       '所有观众含儿童均需预约',
-      '暑期非常热门，需准时预约',
+      '⚠️ 暑期(7/6-8/31)闭馆日从周一改为周二',
       '建议上午场，人相对少',
       '适合带小孩，恐龙展厅很受欢迎',
     ],
@@ -1062,8 +1067,8 @@ const ATTRACTIONS = {
   yonghegong: {
     id:'yonghegong', name:'雍和宫', icon:'🛕',
     channel:'微信公众号「雍和宫游客信众服务」',
-    bookingDays:1,
-    releaseTimes:[{hour:0,minute:0}],
+    bookingDays:7,
+    releaseTimes:[{hour:20,minute:0}],
     price:'25元 · 6岁以下免费',
     childPolicy:'6岁以下免费；7-18岁半价',
     closedDays:[],
@@ -1073,7 +1078,7 @@ const ATTRACTIONS = {
     penalty:'爽约限制预约',
     notes:'初一十五免费；每日限量预约',
     strategy:[
-      '提前1天0:00预约',
+      '提前7天20:00在公众号预约购票',
       '每日限量，暑期建议提前预约',
       '初一十五免票但人更多',
       '6岁以下儿童免费',
@@ -1106,18 +1111,18 @@ const ATTRACTIONS = {
   gongwangfu: {
     id:'gongwangfu', name:'恭王府', icon:'🏯',
     channel:'微信公众号「恭王府博物馆」',
-    bookingDays:7,
-    releaseTimes:[{hour:0,minute:0}],
+    bookingDays:10,
+    releaseTimes:[{hour:20,minute:0}],
     price:'40元 · 6岁以下免费、7-18岁半价',
     childPolicy:'6岁以下免费；7-18岁半价',
     closedDays:[1],
     timeSlots:['8:30-17:00'],
     difficulty:'medium',
     entrance:'前海西街17号',
-    penalty:'爽约限制预约',
+    penalty:'60天内累计3次爽约 → 60天不能预约',
     notes:'和珅府邸，福字碑是亮点；附近可逛什刹海',
     strategy:[
-      '提前7天预约',
+      '提前10天20:00在公众号预约',
       '建议请讲解或租语音导览，不然只是看房子',
       '福字碑是必看亮点',
       '6岁以下儿童免费',
@@ -1129,7 +1134,7 @@ const ATTRACTIONS = {
     id:'kejiguan', name:'中国科技馆', icon:'🔬',
     channel:'微信公众号「中国科学技术馆」',
     bookingDays:7,
-    releaseTimes:[{hour:0,minute:0}],
+    releaseTimes:[{hour:18,minute:0}],
     price:'主馆30元/儿童科学乐园30元 · 8岁以下免主馆票',
     childPolicy:'8岁以下免主馆票；儿童科学乐园需单独购票',
     closedDays:[1],
@@ -1150,7 +1155,7 @@ const ATTRACTIONS = {
   badaling: {
     id:'badaling', name:'八达岭长城', icon:'🏔️',
     channel:'微信公众号「长城内外旅游」',
-    bookingDays:7,
+    bookingDays:10,
     releaseTimes:[{hour:0,minute:0}],
     price:'门票40元/缆车单程100元 · 6岁以下免费、7-18岁半价',
     childPolicy:'6岁以下免费；7-18岁半价',
@@ -1161,7 +1166,7 @@ const ATTRACTIONS = {
     penalty:'爽约限制预约',
     notes:'暑期人非常多；建议早出发；可乘S2线或877路公交',
     strategy:[
-      '提前7天预约门票',
+      '提前10天预约门票',
       '建议早班出发，避开中午人流高峰',
       '带小孩建议坐缆车上下，省体力',
       '6岁以下儿童免费',
@@ -1195,6 +1200,29 @@ function fmtDateCN(d) { return (d.getMonth()+1)+'月'+d.getDate()+'日 周'+week
 function escapeHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+// 检查景点在指定日期是否临时闭馆
+function isTempClosed(att, date) {
+  if (!att.tempClose) return false;
+  const from = parseDateKey(att.tempClose.from);
+  const to = parseDateKey(att.tempClose.to);
+  return date >= from && date <= to;
+}
+// 获取指定日期的有效闭馆日（考虑季节性变更）
+function getEffectiveClosedDays(att, date) {
+  if (att.seasonalClosedDays) {
+    const from = parseDateKey(att.seasonalClosedDays.from);
+    const to = parseDateKey(att.seasonalClosedDays.to);
+    if (date >= from && date <= to) {
+      return att.seasonalClosedDays.closedDays;
+    }
+  }
+  return att.closedDays;
+}
+// 综合判断景点在指定日期是否闭馆
+function isAttractionClosedOn(att, date) {
+  if (isTempClosed(att, date)) return true;
+  return getEffectiveClosedDays(att, date).includes(date.getDay());
+}
 
 // ==================== 向导逻辑 ====================
 function initWizard() {
@@ -1213,17 +1241,22 @@ function adjustChildren(n) { wizardData.children = Math.max(0, Math.min(10, wiza
 
 function renderAttractionGrid() {
   const grid = document.getElementById('attraction-grid');
+  const today = getBeijingNow();
   grid.innerHTML = Object.values(ATTRACTIONS).map(att => {
     const diffLabel = att.difficulty === 'hard' ? '⭐最难预约' : att.difficulty === 'medium' ? '中等难度' : '较好约';
     const releaseStr = att.releaseTimes.map(t => t.hour+':'+pad(t.minute)).join('/');
-    const closedStr = att.closedDays.length ? '周'+att.closedDays.map(d => '日一二三四五六'[d]).join('/')+'闭馆' : '无闭馆日';
-    return `<div class="att-card" onclick="toggleAttraction('${att.id}', this)" data-id="${att.id}">
+    let closedStr = att.closedDays.length ? '周'+att.closedDays.map(d => '日一二三四五六'[d]).join('/')+'闭馆' : '无闭馆日';
+    if (att.seasonalClosedDays) closedStr += '（暑期有变更）';
+    const tempClosed = isTempClosed(att, today);
+    const tempBadge = tempClosed ? '<div class="att-diff hard" style="margin-top:.2rem">⚠️ 临时闭馆中</div>' : '';
+    return `<div class="att-card${tempClosed?'':''}" onclick="toggleAttraction('${att.id}', this)" data-id="${att.id}"${tempClosed?' style="opacity:.5"':''}>
       <div class="att-icon">${att.icon}</div>
       <div class="att-name">${att.name}</div>
       <div class="att-meta">${releaseStr}放票 · 提前${att.bookingDays}天</div>
       <div class="att-meta">${att.price.split('·')[0]}</div>
       <div class="att-meta">${closedStr}</div>
       <div class="att-diff ${att.difficulty}">${diffLabel}</div>
+      ${tempBadge}
     </div>`;
   }).join('');
 }
@@ -1285,28 +1318,30 @@ function detectConflicts(arrival, departure, atts) {
   const conflicts = [];
   const now = getBeijingNow();
 
-  // 闭馆日冲突
+  // 临时闭馆检测
+  atts.forEach(att => {
+    if (!att.tempClose) return;
+    for (let d = new Date(arrival); d <= departure; d = addDays(d, 1)) {
+      if (isTempClosed(att, d)) {
+        conflicts.push(`⚠️ ${att.name} ${fmtDate(d)} 处于临时闭馆期（${att.tempClose.reason}），无法参观`);
+        break;
+      }
+    }
+  });
+
+  // 闭馆日冲突（考虑季节性变更）
   for (let d = new Date(arrival); d <= departure; d = addDays(d, 1)) {
-    const dow = d.getDay();
-    const closed = atts.filter(a => a.closedDays.includes(dow));
+    const closed = atts.filter(a => isAttractionClosedOn(a, d));
     if (closed.length > 0 && closed.length === atts.length) {
       conflicts.push(`${fmtDate(d)} 周${weekdayCN(d)}：所有选中景点均闭馆，安排其他活动`);
     }
   }
 
-  // 放票时间重叠
-  const releaseMap = {};
-  atts.forEach(att => {
-    att.releaseTimes.forEach(rt => {
-      att.closedDays.forEach(() => {});
-    });
-  });
-
   // 同一日期同一时间段多个景点放票
   const timeSlots = {};
   atts.forEach(att => {
     for (let d = new Date(arrival); d <= departure; d = addDays(d, 1)) {
-      const visitKey = dateKey(d);
+      if (isAttractionClosedOn(att, d)) continue; // 跳过闭馆日
       const releaseDate = addDays(d, -att.bookingDays);
       att.releaseTimes.forEach(rt => {
         const slotKey = dateKey(releaseDate) + '_' + rt.hour + ':' + pad(rt.minute);
@@ -1327,6 +1362,7 @@ function detectConflicts(arrival, departure, atts) {
   atts.forEach(att => {
     expiredMap[att.id] = { name: att.name, dates: [] };
     for (let d = new Date(arrival); d <= departure; d = addDays(d, 1)) {
+      if (isAttractionClosedOn(att, d)) continue; // 跳过闭馆日
       const releaseDate = addDays(d, -att.bookingDays);
       const releaseDateTime = new Date(releaseDate);
       att.releaseTimes.forEach(rt => {
@@ -1368,8 +1404,7 @@ function generatePlan(trip) {
   const bookingWindows = [];
   atts.forEach(att => {
     visitDates.forEach(vd => {
-      const dow = vd.getDay();
-      if (att.closedDays.includes(dow)) return; // 跳过闭馆日
+      if (isAttractionClosedOn(att, vd)) return; // 跳过闭馆日和临时闭馆
       const releaseDate = addDays(vd, -att.bookingDays);
       att.releaseTimes.forEach(rt => {
         const releaseDT = new Date(releaseDate);
@@ -1401,9 +1436,8 @@ function generatePlan(trip) {
 
   // 生成日程建议（避开闭馆日）
   const schedule = visitDates.map(vd => {
-    const dow = vd.getDay();
-    const available = atts.filter(a => !a.closedDays.includes(dow));
-    const closed = atts.filter(a => a.closedDays.includes(dow));
+    const available = atts.filter(a => !isAttractionClosedOn(a, vd));
+    const closed = atts.filter(a => isAttractionClosedOn(a, vd));
     return { date: vd, weekday: dow, available, closed };
   });
 
@@ -1426,9 +1460,21 @@ function generatePlan(trip) {
 }
 
 // ==================== 方案页面渲染 ====================
+const DATA_LAST_VERIFIED = '2026-07-28';
 function renderPlan() {
   const p = planData;
   const trip = p.trip;
+
+  // 数据新鲜度检查
+  const verifiedDate = parseDateKey(DATA_LAST_VERIFIED);
+  const daysSinceVerified = Math.floor((getBeijingNow() - verifiedDate) / 86400000);
+  const freshEl = document.getElementById('data-freshness-warning');
+  if (daysSinceVerified > 90) {
+    freshEl.style.display = 'block';
+    freshEl.innerHTML = `<div class="conflict-warning" style="border-color:var(--orange)"><div class="icon">⏰</div><div>景点预约数据已 ${daysSinceVerified} 天未验证（上次验证：${DATA_LAST_VERIFIED}），放票时间和规则可能已变更，请务必以官方渠道最新信息为准！</div></div>`;
+  } else {
+    freshEl.style.display = 'none';
+  }
 
   // 头部标签
   const tags = document.getElementById('plan-tags');
@@ -1482,7 +1528,7 @@ function renderPlan() {
 
   // 底部
   document.getElementById('plan-footer').innerHTML =
-    `⚡ 北京亲子游安心预约助手 · 数据更新于 2026/07/24<br>` +
+    `⚡ 北京亲子游安心预约助手 · 数据更新于 2026/07/28<br>` +
     `景点放票规则以官方为准 · 祝预约顺利！💪`;
 }
 
@@ -1497,8 +1543,7 @@ function renderStatusBoard() {
   let doneCount = 0;
   p.atts.forEach(att => {
     p.visitDates.forEach(vd => {
-      const dow = vd.getDay();
-      if (att.closedDays.includes(dow)) return;
+      if (isAttractionClosedOn(att, vd)) return;
       const releaseDate = addDays(vd, -att.bookingDays);
       const releaseDT = new Date(releaseDate);
       att.releaseTimes.forEach(rt => {
@@ -1620,7 +1665,9 @@ function renderStrategyCards() {
   container.innerHTML = p.atts.map(att => {
     const diffLabel = att.difficulty === 'hard' ? '⭐最难预约' : att.difficulty === 'medium' ? '中等难度' : '较好约';
     const releaseStr = att.releaseTimes.map(t => t.hour+':'+pad(t.minute)).join(' / ');
-    const closedStr = att.closedDays.length ? '周'+att.closedDays.map(d => '日一二三四五六'[d]).join('/')+'闭馆' : '无闭馆日';
+    let closedStr = att.closedDays.length ? '周'+att.closedDays.map(d => '日一二三四五六'[d]).join('/')+'闭馆' : '无闭馆日';
+    if (att.seasonalClosedDays) closedStr += '（暑期闭馆日变更）';
+    if (att.tempClose) closedStr = '⚠️ 临时闭馆：'+att.tempClose.reason;
     const hasWarning = att.id === 'maozhuxi';
     return `<div class="strategy-card">
       <div class="sc-header" onclick="toggleCard(this)">
@@ -1758,11 +1805,19 @@ function renderNotes() {
     '景点放票规则可能随时调整，以官方渠道最新公告为准',
   ];
 
-  // 添加闭馆日提醒
+  // 添加闭馆日提醒（考虑季节性变更和临时闭馆）
   const closedNotes = [];
-  p.atts.filter(a => a.closedDays.length > 0).forEach(att => {
+  p.atts.forEach(att => {
+    if (att.tempClose) {
+      closedNotes.push(`⚠️ ${att.name}：${att.tempClose.from}至${att.tempClose.to}临时闭馆（${att.tempClose.reason}）`);
+    }
     const days = att.closedDays.map(d => '周'+'日一二三四五六'[d]).join('、');
-    closedNotes.push(`${att.name}：${days}闭馆，避开这些天`);
+    let note = `${att.name}：${days}闭馆，避开这些天`;
+    if (att.seasonalClosedDays) {
+      const sDays = att.seasonalClosedDays.closedDays.map(d => '周'+'日一二三四五六'[d]).join('、');
+      note += `；但${att.seasonalClosedDays.from}至${att.seasonalClosedDays.to}期间改为${sDays}闭馆`;
+    }
+    closedNotes.push(note);
   });
 
   container.innerHTML = (closedNotes.concat(generalNotes)).map(n =>
