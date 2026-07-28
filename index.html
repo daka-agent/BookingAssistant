@@ -924,6 +924,55 @@
     .vm-item{border:1px solid #ccc !important; background:white !important;}
     .vm-item input{color:#1a1a1a !important; border-bottom:1px solid #ddd !important;}
   }
+
+  /* Foreign Visitors Guide */
+  .foreign-toggle{
+    display:inline-block; margin-top:.6rem; padding:.3rem .8rem;
+    font-size:.75rem; color:var(--text3); background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.15); border-radius:1rem; cursor:pointer;
+    transition:all .2s;
+  }
+  .foreign-toggle:hover{ background:rgba(255,255,255,.15); }
+  .foreign-guide{ display:none; margin-top:1rem; }
+  .foreign-guide.show{ display:block; }
+  .fg-section{ margin-bottom:1.2rem; }
+  .fg-title{ font-size:.95rem; font-weight:700; color:var(--text); margin-bottom:.5rem; }
+  .fg-card{
+    background:var(--card); border:1px solid var(--border); border-radius:.6rem;
+    padding:.8rem; margin-bottom:.6rem;
+  }
+  .fg-card-name{ font-size:.9rem; font-weight:700; color:var(--text); margin-bottom:.3rem; }
+  .fg-card-name .cn{ font-weight:400; color:var(--text3); font-size:.8rem; margin-left:.3rem; }
+  .fg-badge{
+    display:inline-block; font-size:.7rem; padding:.1rem .5rem; border-radius:.3rem;
+    margin-right:.3rem; font-weight:600;
+  }
+  .fg-badge.online{ background:rgba(34,139,34,.15); color:#2a8a2a; }
+  .fg-badge.onsite{ background:rgba(255,165,0,.15); color:#c80; }
+  .fg-badge.offline{ background:rgba(200,0,0,.12); color:#c00; }
+  .fg-badge.thirdparty{ background:rgba(70,130,230,.15); color:#4682e6; }
+  .fg-note{ font-size:.78rem; color:var(--text2); margin-top:.3rem; line-height:1.5; }
+  .fg-link{
+    display:inline-block; font-size:.78rem; color:#4682e6; text-decoration:none;
+    margin-top:.3rem; border-bottom:1px dashed #4682e6; padding-bottom:1px;
+  }
+  .fg-special{
+    font-size:.75rem; color:var(--text3); margin-top:.4rem;
+    padding:.4rem .5rem; background:rgba(255,255,255,.04); border-radius:.3rem;
+    line-height:1.5;
+  }
+  .fg-tips{ font-size:.8rem; color:var(--text2); line-height:1.7; }
+  .fg-tips li{ margin-bottom:.2rem; }
+  .fg-platforms{ display:flex; gap:.5rem; flex-wrap:wrap; }
+  .fg-platform{
+    display:inline-block; font-size:.75rem; padding:.3rem .6rem;
+    border:1px solid var(--border); border-radius:.3rem; color:var(--text2);
+    text-decoration:none;
+  }
+  .fg-disclaimer{
+    font-size:.72rem; color:var(--text3); margin-top:.8rem;
+    padding:.5rem; border:1px dashed var(--border); border-radius:.3rem; line-height:1.5;
+  }
 </style>
 </head>
 <body>
@@ -939,6 +988,41 @@
         <span>已有</span>
         <span class="counter-num" id="real-counter-num">—</span>
         <span>位游客使用北京景点预约</span>
+      </div>
+      <div class="foreign-toggle" onclick="toggleForeignGuide()">🌍 For Foreign Visitors</div>
+    </div>
+
+    <!-- Foreign Visitors Guide -->
+    <div class="foreign-guide" id="foreign-guide">
+      <div class="fg-section">
+        <div class="fg-title">📋 General Tips for Foreign Visitors</div>
+        <ul class="fg-tips">
+          <li><b>Passport required</b> at all attractions for entry — it serves as your ticket</li>
+          <li><b>Book in advance</b> — most attractions do not sell same-day tickets at the gate</li>
+          <li><b>Tickets release 7 days ahead</b> — set a reminder for the release time</li>
+          <li><b>WeChat Mini Programs are mostly Chinese-only</b> — bring a Chinese-speaking friend or use third-party platforms</li>
+          <li><b>Third-party platforms</b> (Trip.com, Klook, Viator) offer English booking with international credit cards</li>
+        </ul>
+      </div>
+
+      <div class="fg-section">
+        <div class="fg-title">🎫 How to Book Each Attraction</div>
+        <div id="fg-cards"></div>
+      </div>
+
+      <div class="fg-section">
+        <div class="fg-title">🌐 Recommended Third-Party Platforms</div>
+        <div class="fg-platforms">
+          <a class="fg-platform" href="https://www.trip.com" target="_blank" rel="noopener">Trip.com</a>
+          <a class="fg-platform" href="https://www.klook.com" target="_blank" rel="noopener">Klook</a>
+          <a class="fg-platform" href="https://www.viator.com" target="_blank" rel="noopener">Viator</a>
+          <a class="fg-platform" href="https://www.getyourguide.com" target="_blank" rel="noopener">GetYourGuide</a>
+        </div>
+        <div class="fg-note" style="margin-top:.5rem;">These platforms support international credit cards and provide English customer service. Booking fees may apply.</div>
+      </div>
+
+      <div class="fg-disclaimer">
+        ℹ️ This guide is for reference only. Booking policies may change — always check the official website for the latest information. This tool is not affiliated with any attraction.
       </div>
     </div>
 
@@ -1631,7 +1715,129 @@ const ATTRACTIONS = {
   },
 };
 
-// ==================== 全局状态 ====================
+// ==================== 外国游客预约信息 ====================
+const FOREIGN_BOOKING = {
+  gugong: {
+    nameEn: 'Forbidden City (Palace Museum)',
+    canBookOnline: true,
+    onlineLink: 'https://intl.dpm.org.cn/index.html?l=en',
+    onlineNote: 'Register with email + passport. Pay with Visa/Mastercard/Alipay/WeChat Pay',
+    canBookOnsite: true,
+    onsiteNote: 'Bring passport to Meridian Gate (South Gate) manual check channel',
+    thirdParty: true,
+    specialNote: 'Tickets release 7 days ahead at 20:00. English hotline: 400-950-1925 (08:00-20:00)'
+  },
+  guobo: {
+    nameEn: 'National Museum of China',
+    canBookOnline: true,
+    onlineLink: 'https://pcticket.chnmuseum.cn/museum-en/',
+    onlineNote: 'Register with email + passport. Free admission.',
+    canBookOnsite: false,
+    onsiteNote: '',
+    thirdParty: true,
+    specialNote: 'Tickets release 7 days ahead at 17:00. No walk-in tickets. Hotline: 010-65116400'
+  },
+  junbo: {
+    nameEn: 'Military Museum',
+    canBookOnline: false,
+    onlineLink: '',
+    onlineNote: '',
+    canBookOnsite: true,
+    onsiteNote: 'Bring passport to ticket window',
+    thirdParty: false,
+    specialNote: 'WeChat official account is Chinese-only. On-site booking recommended.'
+  },
+  tiantan: {
+    nameEn: 'Temple of Heaven',
+    canBookOnline: false,
+    onlineLink: '',
+    onlineNote: '',
+    canBookOnsite: true,
+    onsiteNote: 'Buy tickets at the gate with passport',
+    thirdParty: true,
+    specialNote: 'On-site ticket purchase available. Third-party platforms (Trip.com/Klook) recommended.'
+  },
+  yiheyuan: {
+    nameEn: 'Summer Palace',
+    canBookOnline: false,
+    onlineLink: '',
+    onlineNote: '',
+    canBookOnsite: true,
+    onsiteNote: 'Go to park entrance service window with passport for staff-assisted booking',
+    thirdParty: true,
+    specialNote: 'Online booking requires Chinese mainland phone number. English hotline: +86-10-62881144 (8:30-17:00)'
+  },
+  maozhuxi: {
+    nameEn: 'Chairman Mao Memorial Hall',
+    canBookOnline: false,
+    onlineLink: '',
+    onlineNote: '',
+    canBookOnsite: false,
+    onsiteNote: '',
+    thirdParty: false,
+    specialNote: 'Currently closed for renovation (Mar 16 - Aug 31, 2026). WeChat mini program is Chinese-only.'
+  },
+  ziranbowuguan: {
+    nameEn: 'National Natural History Museum',
+    canBookOnline: false,
+    onlineLink: '',
+    onlineNote: '',
+    canBookOnsite: true,
+    onsiteNote: 'Bring passport to ticket window',
+    thirdParty: false,
+    specialNote: 'WeChat official account is Chinese-only. On-site booking recommended.'
+  },
+  yonghegong: {
+    nameEn: 'Lama Temple (Yonghegong)',
+    canBookOnline: false,
+    onlineLink: '',
+    onlineNote: '',
+    canBookOnsite: true,
+    onsiteNote: 'Buy tickets at the gate with passport',
+    thirdParty: true,
+    specialNote: 'WeChat official account is Chinese-only. On-site ticket purchase available.'
+  },
+  shoubo: {
+    nameEn: 'Capital Museum',
+    canBookOnline: false,
+    onlineLink: '',
+    onlineNote: '',
+    canBookOnsite: true,
+    onsiteNote: 'Bring passport to ticket window',
+    thirdParty: false,
+    specialNote: 'WeChat mini program is Chinese-only. On-site booking recommended.'
+  },
+  gongwangfu: {
+    nameEn: "Prince Gong's Mansion",
+    canBookOnline: false,
+    onlineLink: '',
+    onlineNote: '',
+    canBookOnsite: true,
+    onsiteNote: 'Buy tickets at the gate with passport',
+    thirdParty: true,
+    specialNote: 'WeChat official account is Chinese-only. On-site ticket purchase available.'
+  },
+  kejiguan: {
+    nameEn: 'China Science and Technology Museum',
+    canBookOnline: false,
+    onlineLink: '',
+    onlineNote: '',
+    canBookOnsite: true,
+    onsiteNote: 'Bring passport to ticket window',
+    thirdParty: false,
+    specialNote: 'WeChat official account is Chinese-only. On-site booking recommended.'
+  },
+  badaling: {
+    nameEn: 'Badaling Great Wall',
+    canBookOnline: false,
+    onlineLink: '',
+    onlineNote: '',
+    canBookOnsite: true,
+    onsiteNote: 'Buy tickets at the entrance with passport',
+    thirdParty: true,
+    specialNote: 'WeChat mini program is Chinese-only. On-site ticket purchase available. Third-party platforms recommended.'
+  },
+};
 let userTrip = null;
 let planData = null;
 let wizardStep = 1;
@@ -1676,6 +1882,59 @@ function getEffectiveClosedDays(att, date) {
 function isAttractionClosedOn(att, date) {
   if (isTempClosed(att, date)) return true;
   return getEffectiveClosedDays(att, date).includes(date.getDay());
+}
+
+// ==================== 外国游客指南 ====================
+function toggleForeignGuide() {
+  const el = document.getElementById('foreign-guide');
+  el.classList.toggle('show');
+  if (el.classList.contains('show') && !el.dataset.rendered) {
+    renderForeignGuide();
+    el.dataset.rendered = '1';
+  }
+}
+
+function renderForeignGuide() {
+  const container = document.getElementById('fg-cards');
+  const diffOrder = { hard:0, medium:1, easy:2 };
+  const sorted = Object.values(ATTRACTIONS).sort((a,b) => (diffOrder[a.difficulty]||3) - (diffOrder[b.difficulty]||3));
+  container.innerHTML = sorted.map(att => {
+    const fb = FOREIGN_BOOKING[att.id];
+    if (!fb) return '';
+    let badges = '';
+    if (fb.canBookOnline) {
+      badges += '<span class="fg-badge online">✅ Online booking with passport</span>';
+    } else {
+      badges += '<span class="fg-badge offline">❌ No online booking for foreigners</span>';
+    }
+    if (fb.canBookOnsite) {
+      badges += '<span class="fg-badge onsite">🎫 On-site tickets</span>';
+    }
+    if (fb.thirdParty) {
+      badges += '<span class="fg-badge thirdparty">🌐 Third-party available</span>';
+    }
+    let linkHtml = '';
+    if (fb.onlineLink) {
+      linkHtml = '<a class="fg-link" href="' + fb.onlineLink + '" target="_blank" rel="noopener">🔗 Official English booking site →</a>';
+    }
+    let onsiteHtml = '';
+    if (fb.canBookOnsite && fb.onsiteNote) {
+      onsiteHtml = '<div class="fg-note">🎫 <b>On-site:</b> ' + fb.onsiteNote + '</div>';
+    }
+    let onlineNoteHtml = '';
+    if (fb.canBookOnline && fb.onlineNote) {
+      onlineNoteHtml = '<div class="fg-note">📱 <b>Online:</b> ' + fb.onlineNote + '</div>';
+    }
+    let specialHtml = '';
+    if (fb.specialNote) {
+      specialHtml = '<div class="fg-special">⚠️ ' + fb.specialNote + '</div>';
+    }
+    return '<div class="fg-card">' +
+      '<div class="fg-card-name">' + att.icon + ' ' + fb.nameEn + '<span class="cn">' + att.name + '</span></div>' +
+      '<div style="margin-bottom:.3rem;">' + badges + '</div>' +
+      onlineNoteHtml + linkHtml + onsiteHtml + specialHtml +
+    '</div>';
+  }).join('');
 }
 
 // ==================== 向导逻辑 ====================
