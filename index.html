@@ -769,6 +769,87 @@
   .faq-a{font-size:.73rem; color:var(--text2); line-height:1.6;}
   .faq-a b{color:var(--text);}
 
+  /* 行程总览统计卡片 */
+  .plan-overview{
+    background:linear-gradient(135deg,rgba(59,130,246,0.1),rgba(139,92,246,0.06));
+    border:1px solid rgba(59,130,246,0.2); border-radius:14px;
+    padding:.9rem; margin:.6rem 0; display:grid;
+    grid-template-columns:1fr 1fr; gap:.6rem;
+  }
+  .po-item{
+    background:var(--bg2); border-radius:8px; padding:.5rem .6rem;
+    display:flex; align-items:center; gap:.5rem;
+  }
+  .po-icon{font-size:1.1rem; flex-shrink:0;}
+  .po-info{flex:1; min-width:0;}
+  .po-label{font-size:.62rem; color:var(--text3);}
+  .po-value{font-size:.82rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .po-value.highlight{color:var(--cyan);}
+  .po-value.warn{color:var(--orange);}
+  @media(max-width:480px){
+    .plan-overview{grid-template-columns:1fr 1fr; gap:.4rem; padding:.7rem;}
+    .po-item{padding:.4rem .5rem; gap:.35rem;}
+    .po-icon{font-size:1rem;}
+    .po-value{font-size:.75rem;}
+    .po-label{font-size:.58rem;}
+  }
+
+  /* 清单进度条 */
+  .cl-progress-wrap{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:14px; padding:.7rem 1rem; margin-bottom:.8rem;
+  }
+  .cl-progress-header{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:.5rem;
+  }
+  .cl-progress-title{font-size:.82rem; font-weight:700; display:flex; align-items:center; gap:.4rem;}
+  .cl-progress-count{font-size:.75rem; color:var(--text2); font-variant-numeric:tabular-nums;}
+  .cl-progress-count .done{color:var(--green); font-weight:700;}
+  .cl-progress-bar{
+    height:8px; border-radius:4px; background:var(--bg2);
+    overflow:hidden; position:relative;
+  }
+  .cl-progress-fill{
+    height:100%; border-radius:4px; transition:width .4s ease;
+    background:linear-gradient(90deg,var(--cyan),var(--green));
+  }
+  .cl-progress-fill.complete{
+    background:linear-gradient(90deg,var(--green),var(--cyan));
+  }
+
+  /* 回顶浮动按钮 */
+  .back-to-top{
+    position:fixed; bottom:max(1.2rem, env(safe-area-inset-bottom)); right:1rem;
+    width:44px; height:44px; border-radius:50%;
+    background:var(--card); border:1px solid var(--cyan);
+    color:var(--cyan); font-size:1.3rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    z-index:90; opacity:0; pointer-events:none;
+    transition:opacity .3s, transform .3s;
+    box-shadow:0 2px 12px rgba(0,240,255,0.15);
+  }
+  .back-to-top.show{opacity:1; pointer-events:auto;}
+  .back-to-top:active{transform:scale(.9);}
+
+  /* 日程增强 */
+  .schedule-day{
+    display:flex; align-items:flex-start; gap:.5rem; padding:.4rem 0;
+    font-size:.78rem; color:var(--text2);
+  }
+  .schedule-day .sd-marker{flex-shrink:0; font-size:.7rem;}
+  .schedule-day .sd-content{flex:1;}
+  .schedule-day .sd-date{font-weight:600; color:var(--text);}
+  .schedule-day .sd-atts{margin-top:.15rem;}
+  .schedule-day .sd-att{
+    display:inline-block; font-size:.7rem; padding:.1rem .45rem;
+    border-radius:6px; margin:.15rem .2rem 0 0;
+    background:rgba(255,255,255,0.04); color:var(--text2);
+  }
+  .schedule-day .sd-att .sd-dur{color:var(--cyan); font-size:.62rem; margin-left:.2rem;}
+  .schedule-day .sd-area{font-size:.65rem; color:var(--text3); margin-top:.2rem;}
+  .schedule-day.all-closed .sd-content{color:var(--text3);}
+
   /* 打印/导出样式 */
   @media print{
     body{background:white !important; color:#1a1a1a !important; padding:0;}
@@ -779,10 +860,12 @@
     .book-btn, .plan-back, .plan-share, .plan-export,
     .faq-section, .counter-badge, .wizard-steps,
     .vm-add-btn, .vm-copy-btn, .vm-del, .vm-actions,
-    .sv-mode-tabs, .sv-tip, .stepper-btn{display:none !important;}
+    .sv-mode-tabs, .sv-tip, .stepper-btn,
+    .back-to-top{display:none !important;}
     .countdown-box, .status-board, .strategy-card,
     .checklist, .child-guide, .notes, .timeline, .tl-item,
-    .visitor-memo, .lessons, .summary-box{
+    .visitor-memo, .lessons, .summary-box,
+    .plan-overview, .cl-progress-wrap{
       background:white !important; border:1px solid #ccc !important;
       color:#1a1a1a !important; box-shadow:none !important;
     }
@@ -969,6 +1052,7 @@
       <div class="tags" id="plan-tags"></div>
     </div>
 
+    <div class="plan-overview" id="plan-overview"></div>
     <div class="status-board" id="status-board"></div>
     <div class="urgent-banner" id="urgentBanner" style="display:none;">
       <div class="urgent-icon">🚨</div>
@@ -1065,6 +1149,15 @@
     <div id="strategy-container"></div>
 
     <div class="section-title" id="anchor-checklist">✅ 操作清单</div>
+    <div class="cl-progress-wrap" id="cl-progress-wrap" style="display:none;">
+      <div class="cl-progress-header">
+        <div class="cl-progress-title">📋 预约进度</div>
+        <div class="cl-progress-count"><span class="done" id="cl-done-count">0</span> / <span id="cl-total-count">0</span></div>
+      </div>
+      <div class="cl-progress-bar">
+        <div class="cl-progress-fill" id="cl-progress-fill" style="width:0%;"></div>
+      </div>
+    </div>
     <div id="checklist-container"></div>
 
     <div class="section-title" id="anchor-child">👶 儿童票指南</div>
@@ -1078,6 +1171,8 @@
 
     <div class="footer" id="plan-footer"></div>
   </div>
+
+  <div class="back-to-top" id="back-to-top" onclick="scrollToTop()">↑</div>
 
 </div>
 
@@ -1120,6 +1215,7 @@ const ATTRACTIONS = {
     timeSlots:['上午场(8:30-12:00)','下午场(11:00后入馆)'],
     difficulty:'hard',
     entrance:'午门（南门）唯一入口 · 单向游览',
+    duration:'4-5小时', area:'天安门核心区',
     penalty:'半年内（6个月）累计3次爽约 → 60天不能预约',
     notes:'故宫明确声明未授权任何第三方，找黄牛有风险',
     strategy:[
@@ -1153,6 +1249,7 @@ const ATTRACTIONS = {
     timeSlots:['9:00-11:00','11:00-13:30','13:30-16:00（暑期至16:30）'],
     difficulty:'hard',
     entrance:'北门入馆 · 天安门附近安检耗时长，至少提前1小时到',
+    duration:'3-4小时', area:'天安门核心区',
     penalty:'1年内累计3次未履约 → 限制预约30天',
     notes:'每账号每次最多约5人(14岁以下≤3人)；每自然周限约1次（退票也计入）；至多添加10个常用联系人，30日内不可变更',
     strategy:[
@@ -1184,6 +1281,7 @@ const ATTRACTIONS = {
     timeSlots:['9:00-17:00（16:00停止入馆）'],
     difficulty:'easy',
     entrance:'南门入馆',
+    duration:'2-3小时', area:'西城·军博',
     penalty:'累计3次未履约 → 限制预约',
     notes:'三馆中最好约，放票后很快能拿到',
     strategy:[
@@ -1215,6 +1313,7 @@ const ATTRACTIONS = {
     timeSlots:['6:00-21:00（含祈年殿等景点）'],
     difficulty:'medium',
     entrance:'东门/西门/南门/北门均可',
+    duration:'2-3小时', area:'南城·天坛',
     penalty:'爽约限制预约',
     notes:'联票含祈年殿、回音壁、圜丘；周一祈年殿等景点闭馆',
     strategy:[
@@ -1237,6 +1336,7 @@ const ATTRACTIONS = {
     timeSlots:['6:30-18:00'],
     difficulty:'medium',
     entrance:'东宫门/北宫门/新建宫门等',
+    duration:'3-4小时', area:'海淀·颐和园',
     penalty:'爽约限制预约',
     notes:'无闭馆日；建议预留半天时间游览',
     strategy:[
@@ -1259,6 +1359,7 @@ const ATTRACTIONS = {
     timeSlots:['8:00-12:00'],
     difficulty:'medium',
     entrance:'北门入口',
+    duration:'1-2小时', area:'天安门核心区',
     penalty:'爽约限制预约',
     notes:'严禁带包、手机、相机、饮水等入内，需提前寄存；着装需端庄',
     tempClose:{ from:'2026-03-16', to:'2026-08-31', reason:'内部维修改造施工，暂停对外开放' },
@@ -1284,6 +1385,7 @@ const ATTRACTIONS = {
     timeSlots:['9:00-11:00','11:00-14:00','14:00-16:00（16:30停止入馆）'],
     difficulty:'medium',
     entrance:'北京市东城区天桥南大街126号',
+    duration:'2-3小时', area:'南城·天桥',
     penalty:'当月累计3次爽约 → 90天不能预约',
     notes:'暑期非常热门；7/6-8/31闭馆日改为周二',
     strategy:[
@@ -1315,6 +1417,7 @@ const ATTRACTIONS = {
     timeSlots:['9:00-16:30'],
     difficulty:'medium',
     entrance:'雍和宫大街12号',
+    duration:'1-2小时', area:'东城·雍和宫',
     penalty:'爽约限制预约',
     notes:'初一十五免费；每日限量预约',
     strategy:[
@@ -1337,6 +1440,7 @@ const ATTRACTIONS = {
     timeSlots:['9:00-17:00（16:00停止入馆）'],
     difficulty:'easy',
     entrance:'西长安街复兴门外大街16号',
+    duration:'2-3小时', area:'西城·木樨地',
     penalty:'爽约限制预约',
     notes:'预约较容易，适合作为备选景点',
     strategy:[
@@ -1359,6 +1463,7 @@ const ATTRACTIONS = {
     timeSlots:['8:30-17:00'],
     difficulty:'medium',
     entrance:'前海西街17号',
+    duration:'2-3小时', area:'什刹海',
     penalty:'60天内累计3次爽约 → 60天不能预约',
     notes:'和珅府邸，福字碑是亮点；附近可逛什刹海',
     strategy:[
@@ -1381,6 +1486,7 @@ const ATTRACTIONS = {
     timeSlots:['9:30-17:00（16:00停止入馆）'],
     difficulty:'medium',
     entrance:'朝阳区北辰东路5号',
+    duration:'3-4小时', area:'奥体·科技馆',
     penalty:'爽约限制预约',
     notes:'非常适合亲子游；儿童科学乐园需单独购票预约',
     strategy:[
@@ -1403,6 +1509,7 @@ const ATTRACTIONS = {
     timeSlots:['6:30-16:30'],
     difficulty:'medium',
     entrance:'延庆区 G6京藏高速58号出口',
+    duration:'全天', area:'延庆远郊',
     penalty:'爽约限制预约',
     notes:'暑期人非常多；建议早出发；可乘S2线或877路公交',
     strategy:[
@@ -1482,7 +1589,9 @@ function adjustChildren(n) { wizardData.children = Math.max(0, Math.min(10, wiza
 function renderAttractionGrid() {
   const grid = document.getElementById('attraction-grid');
   const today = getBeijingNow();
-  grid.innerHTML = Object.values(ATTRACTIONS).map(att => {
+  const diffOrder = { hard:0, medium:1, easy:2 };
+  const sorted = Object.values(ATTRACTIONS).sort((a,b) => (diffOrder[a.difficulty]||3) - (diffOrder[b.difficulty]||3));
+  grid.innerHTML = sorted.map(att => {
     const diffLabel = att.difficulty === 'hard' ? '⭐ 最难约' : att.difficulty === 'medium' ? '中等' : '易约';
     const releaseStr = att.releaseTimes.map(t => t.hour+':'+pad(t.minute)).join('/');
     let closedStr = att.closedDays.length ? '周'+att.closedDays.map(d => '日一二三四五六'[d]).join('/')+'闭馆' : '天天开';
@@ -1770,6 +1879,9 @@ function renderPlan() {
     <span class="tag">${p.atts.length}个景点</span>
   `;
 
+  // 行程总览统计
+  renderPlanOverview();
+
   // 状态看板
   renderStatusBoard();
 
@@ -1818,6 +1930,70 @@ function renderPlan() {
   document.getElementById('plan-footer').innerHTML =
     `⚡ 北京亲子游安心预约助手 · 数据更新于 2026/07/28<br>` +
     `景点放票规则以官方为准 · 祝预约顺利！💪`;
+}
+
+function renderPlanOverview() {
+  const p = planData;
+  const trip = p.trip;
+  const now = getBeijingNow();
+
+  // 预估费用：提取每个景点第一个票价数字，成人全价+儿童半价（粗略估算）
+  let totalCost = 0;
+  let hasPaid = false;
+  p.atts.forEach(att => {
+    if (att.price.includes('免费') && !att.price.match(/\d+元/)) return;
+    const match = att.price.match(/(\d+)元/);
+    if (match) {
+      hasPaid = true;
+      const price = parseInt(match[1]);
+      totalCost += price * trip.adults;
+      if (trip.children > 0) {
+        // 儿童半价粗略估算
+        totalCost += Math.floor(price / 2) * trip.children;
+      }
+    }
+  });
+  const costStr = !hasPaid ? '全免费' : '约 ¥' + totalCost;
+
+  // 最难约景点
+  const hardAtts = p.atts.filter(a => a.difficulty === 'hard');
+  const hardest = hardAtts.length > 0 ? hardAtts[0] : (p.atts.length > 0 ? p.atts[0] : null);
+
+  // 最早放票
+  const futureWindows = p.bookingWindows.filter(w => w.ts > now);
+  const earliest = futureWindows.length > 0 ? futureWindows[0] : null;
+
+  const html = `
+    <div class="po-item">
+      <div class="po-icon">💰</div>
+      <div class="po-info">
+        <div class="po-label">预估费用</div>
+        <div class="po-value">${costStr}</div>
+      </div>
+    </div>
+    <div class="po-item">
+      <div class="po-icon">🎟️</div>
+      <div class="po-info">
+        <div class="po-label">需预约景点</div>
+        <div class="po-value">${p.atts.length} 个</div>
+      </div>
+    </div>
+    <div class="po-item">
+      <div class="po-icon">⭐</div>
+      <div class="po-info">
+        <div class="po-label">最难约</div>
+        <div class="po-value warn">${hardest ? hardest.icon + ' ' + hardest.name : '—'}</div>
+      </div>
+    </div>
+    <div class="po-item">
+      <div class="po-icon">📅</div>
+      <div class="po-info">
+        <div class="po-label">最早放票</div>
+        <div class="po-value highlight">${earliest ? fmtDate(earliest.ts) + ' ' + earliest.releaseTime : '—'}</div>
+      </div>
+    </div>
+  `;
+  document.getElementById('plan-overview').innerHTML = html;
 }
 
 function renderStatusBoard() {
@@ -2130,11 +2306,53 @@ function renderSchedule() {
   const html = p.schedule.map(day => {
     const isClosed = day.available.length === 0;
     if (isClosed) {
-      return `<div class="item"><span class="dot" style="color:var(--text3)">▶</span><div><b>${fmtDate(day.date)} 周${weekdayCN(day.date)}</b> → 所有选中景点闭馆，安排其他活动（长城/天坛外围/胡同/王府井等）</div></div>`;
+      return `<div class="schedule-day all-closed">
+        <span class="sd-marker" style="color:var(--text3)">▶</span>
+        <div class="sd-content">
+          <span class="sd-date">${fmtDate(day.date)} 周${weekdayCN(day.date)}</span>
+          <div class="sd-atts" style="color:var(--text3);font-size:.72rem;margin-top:.1rem;">所有选中景点闭馆，安排其他活动（长城外围/胡同/王府井等）</div>
+        </div>
+      </div>`;
     }
-    const attNames = day.available.map(a => a.icon+' '+a.name).join(' / ');
-    const closedNames = day.closed.length > 0 ? `（${day.closed.map(a=>a.name).join('、')}闭馆）` : '';
-    return `<div class="item"><span class="dot" style="color:var(--green)">▶</span><div><b>${fmtDate(day.date)} 周${weekdayCN(day.date)}</b> → 可去：${attNames} ${closedNames}</div></div>`;
+
+    // 按区域分组
+    const areaGroups = {};
+    day.available.forEach(att => {
+      const area = att.area || '其他';
+      if (!areaGroups[area]) areaGroups[area] = [];
+      areaGroups[area].push(att);
+    });
+
+    // 景点标签（含游览时长）
+    const attTags = day.available.map(att =>
+      `<span class="sd-att">${att.icon} ${att.name}<span class="sd-dur">${att.duration || ''}</span></span>`
+    ).join('');
+
+    // 区域建议
+    const areas = Object.keys(areaGroups);
+    let areaHint = '';
+    const totalHours = day.available.reduce((sum, att) => {
+      const m = (att.duration || '').match(/(\d+)/);
+      return sum + (m ? parseInt(m[1]) : 2);
+    }, 0);
+    if (totalHours > 8) {
+      areaHint = '⏰ 总游览约' + totalHours + 'h，建议拆分到两天';
+    } else if (areas.length === 1) {
+      areaHint = '📍 同区域：' + areas[0] + '，可顺路游览';
+    } else if (areas.length > 1) {
+      areaHint = '📍 跨' + areas.length + '区域：' + areas.join(' / ');
+    }
+
+    const closedNames = day.closed.length > 0 ? ` <span style="color:var(--text3);font-size:.68rem;">（${day.closed.map(a=>a.name).join('、')}闭馆）</span>` : '';
+
+    return `<div class="schedule-day">
+      <span class="sd-marker" style="color:var(--green)">▶</span>
+      <div class="sd-content">
+        <span class="sd-date">${fmtDate(day.date)} 周${weekdayCN(day.date)}</span>${closedNames}
+        <div class="sd-atts">${attTags}</div>
+        ${areaHint ? `<div class="sd-area">${areaHint}</div>` : ''}
+      </div>
+    </div>`;
   }).join('');
 
   container.innerHTML = html;
@@ -2444,6 +2662,29 @@ function toggleCheck(item) {
     else delete saved[key];
     localStorage.setItem('plan_checklist', JSON.stringify(saved));
   } catch(e) {}
+  updateChecklistProgress();
+}
+
+function updateChecklistProgress() {
+  const allItems = document.querySelectorAll('#checklist-container .cl-item');
+  const checkedItems = document.querySelectorAll('#checklist-container .cl-item.checked');
+  const total = allItems.length;
+  const done = checkedItems.length;
+
+  const wrap = document.getElementById('cl-progress-wrap');
+  if (!wrap) return;
+  const doneEl = document.getElementById('cl-done-count');
+  const totalEl = document.getElementById('cl-total-count');
+  const fillEl = document.getElementById('cl-progress-fill');
+
+  if (total === 0) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  doneEl.textContent = done;
+  totalEl.textContent = total;
+  const percent = Math.round((done / total) * 100);
+  fillEl.style.width = percent + '%';
+  if (percent === 100) fillEl.classList.add('complete');
+  else fillEl.classList.remove('complete');
 }
 
 function restoreChecklist() {
@@ -2456,6 +2697,7 @@ function restoreChecklist() {
       if (saved[key]) { it.querySelector('.cl-checkbox').classList.add('checked'); it.classList.add('checked'); }
     });
   } catch(e) {}
+  updateChecklistProgress();
 }
 
 // ==================== 主流程 ====================
@@ -2887,6 +3129,10 @@ function scrollToSection(id) {
   window.scrollTo({ top: top, behavior: 'smooth' });
 }
 
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function exportPlan() {
   showToast('正在准备打印，可选择"保存为PDF"');
   setTimeout(() => window.print(), 500);
@@ -2902,6 +3148,14 @@ if (!loadFromUrl() && !loadSavedTrip()) {
 
 // 页面首次点击时初始化音频
 document.addEventListener('click', initAudio, { once: true });
+
+// 回顶按钮：滚动超过 600px 时显示
+window.addEventListener('scroll', function() {
+  const btn = document.getElementById('back-to-top');
+  if (!btn) return;
+  if (window.scrollY > 600) btn.classList.add('show');
+  else btn.classList.remove('show');
+}, { passive: true });
 
 // 注册 Service Worker，支持 PWA 离线访问和后台通知
 if ('serviceWorker' in navigator) {
