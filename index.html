@@ -1238,6 +1238,11 @@
         <h4>您的权利</h4>
         <p>您可以随时删除已填写的参观人信息，或清除浏览器数据以彻底删除所有存储的信息。</p>
       </div>
+      <div class="pp-section">
+        <h4>运营者说明</h4>
+        <p>本工具由 <b>DAKA</b> 个人独立开发运营，为<b>非商业、非企业</b>的个人项目，与任何景点场馆或商业机构无隶属关系。</p>
+        <p>如需就隐私问题联系开发者，请通过 GitHub 主页：<a href="https://github.com/daka-agent" target="_blank" rel="noopener" style="color:var(--cyan);">github.com/daka-agent</a></p>
+      </div>
       <div class="pp-buttons">
         <button class="pp-decline" onclick="declinePrivacy()">不同意</button>
         <button class="pp-accept" onclick="acceptPrivacy()">同意并继续</button>
@@ -2032,7 +2037,7 @@ function renderPlan() {
   document.getElementById('plan-footer').innerHTML =
     `<div class="disclaimer-box">
       <b>免责声明</b><br>
-      本工具为<b>非官方第三方信息聚合工具</b>，与故宫博物院、国家博物馆等任何景点场馆无隶属或合作关系。<br>
+      本工具为<b>非官方第三方信息聚合工具</b>，系<b>个人非商业项目</b>，与故宫博物院、国家博物馆等任何景点场馆无隶属或合作关系。<br>
       景点放票时间、预约规则等信息可能随时调整，<b>请以官方渠道最新公告为准</b>。本工具不对因信息偏差导致的任何损失承担责任。<br>
       本工具<b>不提供代约、代抢服务</b>，不参与任何票务交易。「捡漏监控」仅为<b>本地时间提醒工具</b>，不代替用户实际操作，不访问任何外部系统。<br>
       严禁利用本工具进行任何违反景点预约规则的行为。
@@ -2042,7 +2047,10 @@ function renderPlan() {
       <a href="javascript:void(0)" onclick="showPrivacyModal()" style="margin-left:.5rem;">查看隐私政策</a>
     </div>
     <div style="margin-top:.4rem;">⚡ 北京景点预约助手 · 数据更新于 2026/07/28<br>
-    景点放票规则以官方为准 · 祝预约顺利！💪</div>`;
+    景点放票规则以官方为准 · 祝预约顺利！💪</div>
+    <div style="margin-top:.5rem; font-size:.7rem; color:var(--text3);">
+      <a href="https://github.com/daka-agent/BookingAssistant" target="_blank" rel="noopener" style="color:var(--text3); text-decoration:none;">Design by DAKA</a> · 个人非商业项目 · <a href="https://github.com/daka-agent" target="_blank" rel="noopener" style="color:var(--text3); text-decoration:none;">GitHub</a>
+    </div>`;
 }
 
 function renderPlanOverview() {
