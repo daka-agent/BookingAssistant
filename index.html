@@ -430,6 +430,43 @@
   .vm-actions{display:flex; gap:.5rem; margin-top:.6rem;}
   .vm-actions .btn{flex:1; padding:.5rem; font-size:.75rem;}
 
+  /* 隐私政策弹窗 */
+  .privacy-overlay{
+    display:none; position:fixed; top:0; left:0; right:0; bottom:0;
+    background:rgba(0,0,0,0.55); z-index:9999;
+    justify-content:center; align-items:center; padding:1rem;
+  }
+  .privacy-overlay.show{display:flex;}
+  .privacy-card{
+    background:var(--card); border-radius:16px; max-width:420px; width:100%;
+    max-height:80vh; overflow-y:auto; padding:1.4rem 1.2rem;
+  }
+  .privacy-card h3{font-size:.95rem; font-weight:700; margin-bottom:.6rem; color:var(--text);}
+  .privacy-card .pp-section{margin-bottom:.7rem;}
+  .privacy-card .pp-section h4{font-size:.78rem; font-weight:700; color:var(--text); margin-bottom:.2rem;}
+  .privacy-card .pp-section p{font-size:.72rem; line-height:1.6; color:var(--text2);}
+  .privacy-card .pp-section ul{font-size:.72rem; line-height:1.6; color:var(--text2); padding-left:1rem; margin:.2rem 0;}
+  .privacy-card .pp-section li{margin-bottom:.15rem;}
+  .privacy-card .pp-buttons{display:flex; gap:.6rem; margin-top:1rem;}
+  .privacy-card .pp-buttons button{flex:1; padding:.6rem; border-radius:10px; font-size:.78rem; font-weight:600; cursor:pointer; border:none;}
+  .pp-accept{background:var(--cyan); color:#003;}
+  .pp-accept:active{opacity:.85;}
+  .pp-decline{background:var(--bg2); color:var(--text3); border:1px solid var(--border) !important;}
+  .pp-decline:active{opacity:.7;}
+
+  /* 免责声明 */
+  .disclaimer-box{
+    margin:1rem 0 .5rem; padding:.8rem 1rem;
+    background:var(--bg2); border:1px solid var(--border);
+    border-radius:10px; font-size:.66rem; line-height:1.7; color:var(--text3);
+  }
+  .disclaimer-box b{color:var(--text2);}
+  .analytics-notice{
+    font-size:.62rem; color:var(--text3); text-align:center;
+    padding:.3rem 0 .2rem; line-height:1.5;
+  }
+  .analytics-notice a{color:var(--cyan); text-decoration:none;}
+
   /* 时间线 */
   .section-title{
     font-size:.85rem; font-weight:700; color:var(--text2);
@@ -861,7 +898,7 @@
     .faq-section, .counter-badge, .wizard-steps,
     .vm-add-btn, .vm-copy-btn, .vm-del, .vm-actions,
     .sv-mode-tabs, .sv-tip, .stepper-btn,
-    .back-to-top{display:none !important;}
+    .back-to-top, .privacy-overlay{display:none !important;}
     .countdown-box, .status-board, .strategy-card,
     .checklist, .child-guide, .notes, .timeline, .tl-item,
     .visitor-memo, .lessons, .summary-box,
@@ -1137,7 +1174,7 @@
           <button class="btn btn-secondary" onclick="copyAllVisitors()">📋 一键复制全部</button>
         </div>
         <div style="font-size:.68rem;color:var(--text3);margin-top:.5rem;line-height:1.5;">
-          到点预约时直接粘贴，省几秒就是成败之差。信息仅保存在本地，不会上传。
+          到点预约时直接粘贴，省几秒就是成败之差。<b>信息仅保存在本地浏览器，不会上传任何服务器</b>。<a href="javascript:void(0)" onclick="showPrivacyModal()" style="color:var(--cyan);">隐私政策</a>
         </div>
       </div>
     </div>
@@ -1173,6 +1210,40 @@
   </div>
 
   <div class="back-to-top" id="back-to-top" onclick="scrollToTop()">↑</div>
+
+  <div class="privacy-overlay" id="privacy-overlay">
+    <div class="privacy-card">
+      <h3>🔒 参观人信息隐私说明</h3>
+      <div class="pp-section">
+        <h4>收集的信息</h4>
+        <p>本工具的「参观人信息备忘」功能会收集您主动输入的<b>姓名</b>和<b>身份证号</b>，以便您在预约时快速复制粘贴到官方预约平台。</p>
+      </div>
+      <div class="pp-section">
+        <h4>信息存储与安全</h4>
+        <ul>
+          <li>所有信息仅保存在您浏览器的 localStorage 中，<b>不会上传到任何服务器</b></li>
+          <li>分享方案链接时<b>不包含</b>参观人身份信息</li>
+          <li>清除浏览器数据或卸载应用后，信息将永久删除</li>
+        </ul>
+      </div>
+      <div class="pp-section">
+        <h4>使用目的</h4>
+        <p>仅用于您个人预约时的便捷复制，不会用于任何其他目的，不会与第三方共享。</p>
+      </div>
+      <div class="pp-section">
+        <h4>未成年人提示</h4>
+        <p>如涉及14岁以下儿童信息，请确保已获监护人同意。儿童身份证号同样属于敏感个人信息。</p>
+      </div>
+      <div class="pp-section">
+        <h4>您的权利</h4>
+        <p>您可以随时删除已填写的参观人信息，或清除浏览器数据以彻底删除所有存储的信息。</p>
+      </div>
+      <div class="pp-buttons">
+        <button class="pp-decline" onclick="declinePrivacy()">不同意</button>
+        <button class="pp-accept" onclick="acceptPrivacy()">同意并继续</button>
+      </div>
+    </div>
+  </div>
 
 </div>
 
@@ -1928,8 +1999,19 @@ function renderPlan() {
 
   // 底部
   document.getElementById('plan-footer').innerHTML =
-    `⚡ 北京亲子游安心预约助手 · 数据更新于 2026/07/28<br>` +
-    `景点放票规则以官方为准 · 祝预约顺利！💪`;
+    `<div class="disclaimer-box">
+      <b>免责声明</b><br>
+      本工具为<b>非官方第三方信息聚合工具</b>，与故宫博物院、国家博物馆等任何景点场馆无隶属或合作关系。<br>
+      景点放票时间、预约规则等信息可能随时调整，<b>请以官方渠道最新公告为准</b>。本工具不对因信息偏差导致的任何损失承担责任。<br>
+      本工具<b>不提供代约、代抢服务</b>，不参与任何票务交易。「捡漏监控」仅为<b>本地时间提醒工具</b>，不代替用户实际操作，不访问任何外部系统。<br>
+      严禁利用本工具进行任何违反景点预约规则的行为。
+    </div>
+    <div class="analytics-notice">
+      本站使用 <a href="https://www.goatcounter.com/" target="_blank" rel="noopener">GoatCounter</a> 匿名统计服务（不使用 Cookie，不收集个人身份信息，仅记录页面访问量）。
+      <a href="javascript:void(0)" onclick="showPrivacyModal()" style="margin-left:.5rem;">查看隐私政策</a>
+    </div>
+    <div style="margin-top:.4rem;">⚡ 北京亲子游安心预约助手 · 数据更新于 2026/07/28<br>
+    景点放票规则以官方为准 · 祝预约顺利！💪</div>`;
 }
 
 function renderPlanOverview() {
@@ -2995,8 +3077,35 @@ function copyAllVisitors() {
 function toggleVisitorMemo(header) {
   const body = document.getElementById('vm-body');
   const arrow = document.getElementById('vm-arrow');
+  // 如果尚未同意隐私政策，且要展开（不是收起），先弹出隐私说明
+  if (!body.classList.contains('open')) {
+    const consent = localStorage.getItem('visitor_privacy_consent');
+    if (!consent) {
+      showPrivacyModal();
+      return;
+    }
+  }
   body.classList.toggle('open');
   arrow.classList.toggle('open');
+}
+
+function showPrivacyModal() {
+  document.getElementById('privacy-overlay').classList.add('show');
+}
+
+function acceptPrivacy() {
+  try { localStorage.setItem('visitor_privacy_consent', '1'); } catch(e) {}
+  document.getElementById('privacy-overlay').classList.remove('show');
+  // 展开参观人信息
+  const body = document.getElementById('vm-body');
+  const arrow = document.getElementById('vm-arrow');
+  body.classList.add('open');
+  arrow.classList.add('open');
+}
+
+function declinePrivacy() {
+  document.getElementById('privacy-overlay').classList.remove('show');
+  showToast('未同意隐私说明，参观人信息功能暂不可用');
 }
 
 // ==================== 放票提醒通知 ====================
