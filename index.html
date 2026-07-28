@@ -449,6 +449,7 @@
   .tl-item.low{border-left:3px solid var(--green); opacity:.7;}
   .tl-item.done{opacity:.4;}
   .tl-item.missed{opacity:.35; border-left:3px solid var(--text3);}
+  .tl-item.past{opacity:.4; border-left:3px solid var(--text3);}
   .tl-time{font-family:'Courier New',monospace; font-size:.9rem; font-weight:700; min-width:3.5rem; text-align:center;}
   .tl-time.critical{color:var(--red);}
   .tl-time.high{color:var(--orange);}
@@ -1093,7 +1094,7 @@
   const path = (location.pathname || '/').replace(/\/$/, '') || '/';
   const endpoint = 'https://daka-booking.goatcounter.com/counter/' + encodeURIComponent(path) + '.json';
   fetch(endpoint)
-    .then(r => r.json())
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => {
       const el = document.getElementById('real-counter-num');
       const count = data.count === undefined ? NaN : Number(data.count);
@@ -1544,7 +1545,16 @@ function clearPreset() {
 
 function goStep(step) {
   if (step === 3 && selectedAttractions.size === 0) { return; }
-  if (step === 2) { wizardData.arrivalDate = document.getElementById('inp-arrival').value; wizardData.childAges = document.getElementById('inp-childAges').value; }
+  if (step === 2) {
+    const arrivalInput = document.getElementById('inp-arrival');
+    const arrivalVal = arrivalInput.value;
+    if (!arrivalVal) { showToast('请先选择到京日期'); return; }
+    const today = getBeijingNow();
+    const todayKey = dateKey(today);
+    if (arrivalVal < todayKey) { showToast('到京日期不能早于今天'); arrivalInput.value = todayKey; return; }
+    wizardData.arrivalDate = arrivalVal;
+    wizardData.childAges = document.getElementById('inp-childAges').value;
+  }
   wizardStep = step;
   document.querySelectorAll('.wizard-step').forEach(el => el.style.display = 'none');
   document.getElementById('wizard-step'+step).style.display = 'block';
@@ -1667,7 +1677,7 @@ function generatePlan(trip) {
   const arrival = parseDateKey(trip.arrivalDate);
   const departure = addDays(arrival, trip.days - 1);
   const now = getBeijingNow();
-  const atts = trip.selectedAttractions.map(id => ATTRACTIONS[id]);
+  const atts = trip.selectedAttractions.map(id => ATTRACTIONS[id]).filter(Boolean);
 
   // 生成游玩日期列表
   const visitDates = [];
@@ -1713,7 +1723,7 @@ function generatePlan(trip) {
   const schedule = visitDates.map(vd => {
     const available = atts.filter(a => !isAttractionClosedOn(a, vd));
     const closed = atts.filter(a => isAttractionClosedOn(a, vd));
-    return { date: vd, weekday: dow, available, closed };
+    return { date: vd, weekday: vd.getDay(), available, closed };
   });
 
   // 冲突检测
@@ -1863,7 +1873,7 @@ function renderStatusBoard() {
     return;
   }
 
-  board.style.gridTemplateColumns = actionable.length <= 3 ? '1fr 1fr 1fr' : '1fr 1fr 1fr';
+  board.style.gridTemplateColumns = '1fr 1fr 1fr';
 
   board.innerHTML = actionable.map(c => {
     const isDone = c.status === 'done';
@@ -1878,11 +1888,16 @@ function renderStatusBoard() {
 }
 
 function markDone(key, el) {
-  const done = localStorage.getItem('ticket_done_' + key) === '1';
-  if (done) {
-    localStorage.removeItem('ticket_done_' + key);
-  } else {
-    localStorage.setItem('ticket_done_' + key, '1');
+  const storageKey = 'ticket_done_' + key;
+  const done = localStorage.getItem(storageKey) === '1';
+  try {
+    if (done) {
+      localStorage.removeItem(storageKey);
+    } else {
+      localStorage.setItem(storageKey, '1');
+    }
+  } catch(e) {
+    showToast('存储空间不足，无法标记状态');
   }
   renderStatusBoard();
 }
@@ -1905,6 +1920,8 @@ function renderTimeline() {
     return;
   }
 
+  tl.innerHTML = '';
+
   let lastDate = '';
   p.bookingWindows.forEach(w => {
     const dk = dateKey(w.ts);
@@ -1922,7 +1939,7 @@ function renderTimeline() {
     const isDone = localStorage.getItem('ticket_done_' + w.attId + '_' + dateKey(w.visitDate)) === '1';
     const isMissed = w.priority === 'missed';
     const isPast = w.ts < now;
-    const priorityClass = isPast ? (isDone ? 'done' : (isMissed ? 'missed' : 'done')) : w.priority;
+    const priorityClass = isPast ? (isDone ? 'done' : (isMissed ? 'missed' : 'past')) : w.priority;
     const badgeText = isDone ? '已约上' : isMissed ? '已错过' : isPast ? '已过' : (w.priority==='critical'?'紧急':w.priority==='high'?'重要':w.priority==='medium'?'备选':'待预约');
 
     const item = document.createElement('div');
@@ -1948,7 +1965,7 @@ function renderStrategyCards() {
     let closedStr = att.closedDays.length ? '周'+att.closedDays.map(d => '日一二三四五六'[d]).join('/')+'闭馆' : '无闭馆日';
     if (att.seasonalClosedDays) closedStr += '（暑期闭馆日变更）';
     if (att.tempClose) closedStr = '⚠️ 临时闭馆：'+att.tempClose.reason;
-    const hasWarning = att.id === 'maozhuxi';
+    const hasWarning = !!att.tempClose;
     return `<div class="strategy-card">
       <div class="sc-header" onclick="toggleCard(this)">
         <div class="sc-icon">${att.icon}</div>
@@ -2406,24 +2423,37 @@ function toggleCard(header) {
 }
 
 // ==================== Checklist ====================
+function getChecklistKey(item) {
+  const text = item.textContent.trim().replace(/\s+/g, ' ');
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) {
+    hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
+  }
+  return 'cl_' + hash;
+}
+
 function toggleCheck(item) {
   const cb = item.querySelector('.cl-checkbox');
   cb.classList.toggle('checked');
   item.classList.toggle('checked');
-  // 保存状态
-  const allItems = document.querySelectorAll('#checklist-container .cl-item');
-  const states = [];
-  allItems.forEach(it => states.push(it.classList.contains('checked')));
-  try { localStorage.setItem('plan_checklist', JSON.stringify(states)); } catch(e) {}
+  // 保存状态（按内容键存储，方案变更后不会错位）
+  try {
+    const saved = JSON.parse(localStorage.getItem('plan_checklist') || '{}');
+    const key = getChecklistKey(item);
+    if (item.classList.contains('checked')) saved[key] = true;
+    else delete saved[key];
+    localStorage.setItem('plan_checklist', JSON.stringify(saved));
+  } catch(e) {}
 }
 
 function restoreChecklist() {
   try {
-    const saved = JSON.parse(localStorage.getItem('plan_checklist'));
-    if (!saved) return;
+    const saved = JSON.parse(localStorage.getItem('plan_checklist') || '{}');
+    if (!saved || typeof saved !== 'object') return;
     const allItems = document.querySelectorAll('#checklist-container .cl-item');
-    allItems.forEach((it, i) => {
-      if (saved[i]) { it.querySelector('.cl-checkbox').classList.add('checked'); it.classList.add('checked'); }
+    allItems.forEach(it => {
+      const key = getChecklistKey(it);
+      if (saved[key]) { it.querySelector('.cl-checkbox').classList.add('checked'); it.classList.add('checked'); }
     });
   } catch(e) {}
 }
@@ -2431,8 +2461,13 @@ function restoreChecklist() {
 // ==================== 主流程 ====================
 function generateAndShowPlan() {
   // 收集向导数据
+  const arrivalDate = wizardData.arrivalDate || document.getElementById('inp-arrival').value;
+  if (!arrivalDate) { showToast('请先选择到京日期'); return; }
+  const todayKey = dateKey(getBeijingNow());
+  if (arrivalDate < todayKey) { showToast('到京日期不能早于今天，请重新选择'); return; }
+
   userTrip = {
-    arrivalDate: wizardData.arrivalDate || document.getElementById('inp-arrival').value,
+    arrivalDate: arrivalDate,
     days: wizardData.days,
     adults: wizardData.adults,
     children: wizardData.children,
@@ -2478,7 +2513,21 @@ function generateAndShowPlan() {
 
 function resetPlan() {
   // 直接重置，不再弹 confirm（在部分预览/嵌入环境中 confirm 会被拦截导致无反应）
-  try { localStorage.removeItem('userTrip'); localStorage.removeItem('plan_checklist'); } catch(e) {}
+  try {
+    // 清理当前方案的 ticket_done_* 标记
+    if (planData) {
+      const now = getBeijingNow();
+      planData.atts.forEach(att => {
+        planData.visitDates.forEach(vd => {
+          if (isAttractionClosedOn(att, vd)) return;
+          const key = att.id + '_' + dateKey(vd);
+          localStorage.removeItem('ticket_done_' + key);
+        });
+      });
+    }
+    localStorage.removeItem('userTrip');
+    localStorage.removeItem('plan_checklist');
+  } catch(e) {}
   userTrip = null;
   planData = null;
   selectedAttractions.clear();
@@ -2499,12 +2548,20 @@ function resetPlan() {
   window.scrollTo(0, 0);
 }
 
+function validateTrip(trip) {
+  if (!trip || typeof trip !== 'object') return false;
+  if (!trip.arrivalDate || typeof trip.arrivalDate !== 'string') return false;
+  if (typeof trip.days !== 'number' || trip.days < 1 || trip.days > 15) return false;
+  if (!Array.isArray(trip.selectedAttractions) || trip.selectedAttractions.length === 0) return false;
+  return true;
+}
+
 function loadSavedTrip() {
   try {
     const saved = localStorage.getItem('userTrip');
     if (!saved) return false;
     userTrip = JSON.parse(saved);
-    if (!userTrip.selectedAttractions || userTrip.selectedAttractions.length === 0) return false;
+    if (!validateTrip(userTrip)) { localStorage.removeItem('userTrip'); return false; }
     planData = generatePlan(userTrip);
     document.getElementById('view-wizard').style.display = 'none';
     document.getElementById('view-plan').style.display = 'block';
@@ -2553,7 +2610,7 @@ function decodeTripFromUrl() {
 
 function loadFromUrl() {
   const trip = decodeTripFromUrl();
-  if (!trip || !trip.selectedAttractions || trip.selectedAttractions.length === 0) return false;
+  if (!validateTrip(trip)) return false;
   userTrip = trip;
   planData = generatePlan(userTrip);
   document.getElementById('view-wizard').style.display = 'none';
@@ -2788,10 +2845,14 @@ function sendNotification(w, title, body) {
 }
 
 // ==================== 主循环 ====================
+let mainLoopInterval = null;
 function startMainLoop() {
   updateCountdown();
   if (svMode) updateScavengePanel();
-  setInterval(() => {
+  if (mainLoopInterval) clearInterval(mainLoopInterval);
+  mainLoopInterval = setInterval(() => {
+    // 无方案时跳过倒计时和捡漏，降低 CPU 占用
+    if (!planData) return;
     updateCountdown();
     if (svMode) updateScavengePanel();
   }, 1000);
